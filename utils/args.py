@@ -1,6 +1,6 @@
 import argparse
 from torch.cuda.amp import GradScaler as GradScaler
-
+import os 
 
 def str2bool(v):
     if v.lower() in ["true", 1]:
@@ -18,6 +18,9 @@ def parse_args():
 
     parser.add_argument(
         "--name", default='gpu0', help="experiment name: (default: cifar10_ricap)"
+    )
+    parser.add_argument(
+        '--gpu', default='0', type=str, help='gpu id'
     )
     parser.add_argument(
         "--config", help="configuration file", type=str, default="config/default.yaml"
@@ -97,5 +100,5 @@ def parse_args():
 
     if args.amp:
         args.scaler = GradScaler()
-
+    
     return args

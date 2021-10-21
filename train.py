@@ -3,26 +3,20 @@ import os
 import time
 from collections import OrderedDict
 
-import joblib
 import numpy as np
 import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
-import torch.nn as nn
-import torch.optim as optim
 import yaml
 from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from model import build_model
 from dataset.dataloader import build_dataloader
-
+from model import build_model
 from utils.controler import (build_criterion, build_expname, build_optimizer,
                              build_scheduler)
 from utils.utils import *
-
-torch.backends.cudnn.benchmark = False
 from utils.args import parse_args
 
 
@@ -181,6 +175,8 @@ def validate(args, val_loader, model, criterion, epoch, writer):
 def main():
     args = parse_args()
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
     # process argparse & yaml
     if not args.config:
         opt = vars(args)
@@ -210,8 +206,6 @@ def main():
     with open("exps/%s/args.txt" % args.name, "w") as f:
         for arg in vars(args):
             print("%s: %s" % (arg, getattr(args, arg)), file=f)
-
-    joblib.dump(args, "exps/%s/args.pkl" % args.name)
 
     criterion = build_criterion(args).cuda()
 

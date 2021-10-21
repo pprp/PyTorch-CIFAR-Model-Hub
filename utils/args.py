@@ -32,9 +32,10 @@ def parse_args():
     )
     parser.add_argument(
         '--root',
-        default="/home/dpj/project/data",
+        default="~/data",
         help='root of dataset'
     )
+    parser.add_argument("--fast", default=False, type=str2bool, help='train part of cifar10')
     parser.add_argument("--bs", default=128, type=int, help="use RICAP")
     parser.add_argument("--nw", default=4, type=int, help="use RICAP")
 

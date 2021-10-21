@@ -27,15 +27,21 @@ python train.py --dataset cifar10 --mixup True
 ```
 
 ## Results
-| Model                                           | Error rate |   Loss  | Error rate (paper) |
-|:------------------------------------------------|:----------:|:-------:|:------------------:|
-| WideResNet28-10 baseline                        |        3.82| 0.158   |                3.89|
-| WideResNet28-10 +RICAP                          |    **2.82**| 0.141   |            **2.85**|
-| WideResNet28-10 +Random Erasing                 |        3.18|**0.114**|                4.65|
-| WideResNet28-10 +Mixup                          |        3.02| 0.158   |                3.02|
+| Model                           |    Error rate     |   Loss    | Error rate (paper) |
+| :------------------------------ | :---------------: | :-------: | :----------------: |
+| WideResNet28-10 baseline        |   3.82（96.18）   |   0.158   |        3.89        |
+| WideResNet28-10 +RICAP          | **2.82（97.18）** |   0.141   |      **2.85**      |
+| WideResNet28-10 +Random Erasing |   3.18（96.82）   | **0.114** |        4.65        |
+| WideResNet28-10 +Mixup          |   3.02（96.98）   |   0.158   |        3.02        |
 
-Learning curves of loss and accuracy.
 
-![loss](loss.png)
 
-![acc](acc.png)
+reimplementation
+
+| Model                           |    Error rate     | Loss  | Error rate (paper) |
+| :------------------------------ | :---------------: | :---: | :----------------: |
+| WideResNet28-10 baseline        |   3.78（96.22）   |       |        3.89        |
+| WideResNet28-10 +RICAP          | **2.81（97.19）** |       |      **2.85**      |
+| WideResNet28-10 +Random Erasing |                   |       |        4.65        |
+| WideResNet28-10 +Mixup          |   2.93（97.07）   | 0.158 |        3.02        |
+

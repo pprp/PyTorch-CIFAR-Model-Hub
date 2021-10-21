@@ -17,10 +17,10 @@ def parse_args():
     parser.add_argument("--model", default="wideresnet", help="select model")
 
     parser.add_argument(
-        "--name", default=None, help="experiment name: (default: cifar10_ricap)"
+        "--name", default='gpu0', help="experiment name: (default: cifar10_ricap)"
     )
     parser.add_argument(
-        "--config", help="configuration file", type=str, default="configs/default.yml"
+        "--config", help="configuration file", type=str, default="config/default.yaml"
     )
 
     ########### DATASET PART #####################
@@ -48,6 +48,12 @@ def parse_args():
         default="multistep",
         choices=["warmup", "multistep"],
         help="select scheduler",
+    )
+    parser.add_argument(
+        "--crit",
+        default="ce",
+        choices=["ce", "lsr"],
+        help="select criterion",
     )
     parser.add_argument("--milestones", default="60,120,160", type=str)
     parser.add_argument("--gamma", default=0.2, type=float)

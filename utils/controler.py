@@ -6,9 +6,9 @@ import torch.optim as optim
 from torch.optim import lr_scheduler, optimizer
 from torch.utils.data.dataset import random_split
 
-from adabound import AdaBound, AdaBoundW
-from labelsmoothing import LSR
-from warmup import WarmupMultiStepLR
+from utils.adabound import AdaBound, AdaBoundW
+from utils.labelsmoothing import LSR
+from utils.warmup import WarmupMultiStepLR
 
 """
 Generate optimizer and scheduler
@@ -37,7 +37,7 @@ def build_optimizer(model, args):
     return optimizer
 
 
-def build_scheduler(args):
+def build_scheduler(args, optimizer):
     if args.sched == "warmup":
         scheduler = WarmupMultiStepLR(
             optimizer=optimizer, milestones=[int(e) for e in args.milestones.split(",")]
@@ -66,7 +66,7 @@ def build_criterion(args):
 
 def build_expname(args):
     # model and dataset
-    args.name = "e-%s_m-%s_d-%s__" % (args.name, args.model, args.datasest)
+    args.name = "e-%s_m-%s_d-%s__" % (args.name, args.model, args.dataset)
     # running time
     args.name += datetime.datetime.now().strftime("%mM_%dD_%HH")
     # random number

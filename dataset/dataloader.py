@@ -2,9 +2,9 @@ from operator import pos
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from utils import RandomErase
-from autoaugmentation import CIFAR10Policy
-from cutout import Cutout
+from utils.utils import RandomErase
+from .autoaugmentation import CIFAR10Policy
+from .cutout import Cutout
 
 
 def build_transforms(name="cifar10", type="train", args=None):

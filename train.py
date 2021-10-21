@@ -15,8 +15,9 @@ from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from dataset.dataloader import build_dataloader
 from model import build_model
+from dataset.dataloader import build_dataloader
+
 from utils.controler import (build_criterion, build_expname, build_optimizer,
                              build_scheduler)
 from utils.utils import *
@@ -212,7 +213,7 @@ def main():
 
     joblib.dump(args, "exps/%s/args.pkl" % args.name)
 
-    criterion = build_criterion().cuda()
+    criterion = build_criterion(args).cuda()
 
     cudnn.benchmark = True
 
@@ -231,7 +232,7 @@ def main():
     model = model.cuda()
 
     optimizer = build_optimizer(model, args)
-    scheduler = build_scheduler(args)
+    scheduler = build_scheduler(args, optimizer)
 
     log = pd.DataFrame(
         index=[], columns=["epoch", "lr", "loss", "acc", "val_loss", "val_acc"]

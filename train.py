@@ -279,7 +279,7 @@ def main():
         log.to_csv("exps/%s/log.csv" % args.name, index=False)
 
         if val_log["acc"] > best_acc:
-            torch.save(model.state_dict(), "exps/%s/model.pth" % args.name)
+            torch.save(model.state_dict(), "exps/%s/model_%d.pth" % (args.name, (val_log["acc"]*100)))
             best_acc = val_log["acc"]
             print("=> saved best model")
 

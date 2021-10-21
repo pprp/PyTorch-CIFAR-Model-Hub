@@ -8,7 +8,7 @@ class Cutout(object):
         n_holes (int): Number of patches to cut out of each image.
         length (int): The length (in pixels) of each square patch.
     """
-    def __init__(self, n_holes, length):
+    def __init__(self, n_holes=1, length=16):
         self.n_holes = n_holes
         self.length = length
 

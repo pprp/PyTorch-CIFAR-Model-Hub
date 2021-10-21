@@ -31,10 +31,6 @@ def build_transforms(name="cifar10", type="train", args=None):
             mid_transform = [
                 CIFAR10Policy(),
             ]
-        elif args.cutout:
-            mid_transform = [
-                Cutout(),
-            ]
         else:
             mid_transform = []
 
@@ -52,6 +48,9 @@ def build_transforms(name="cifar10", type="train", args=None):
                     [0.5071, 0.4865, 0.4409], [0.1942, 0.1918, 0.1958]
                 ),
             ]
+        
+        if args.cutout:
+            post_transform.append(Cutout(1,16))
 
         transform_type = transforms.Compose(
             [*base_transform, *mid_transform, *post_transform]
@@ -90,14 +89,14 @@ def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=F
     if name == "cifar10":
         if type == "train":
             dataset_type = datasets.CIFAR10(
-                root="~/data",
+                root=root,
                 train=True,
                 download=True,
                 transform=build_transforms("cifar10", "train", args=args),
             )
         elif type == "val":
             dataset_type = datasets.CIFAR10(
-                root="~/data",
+                root=root,
                 train=False,
                 download=True,
                 transform=build_transforms("cifar10", "val", args=args),
@@ -106,21 +105,21 @@ def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=F
     elif name == "cifar100":
         if type == "train":
             dataset_type = datasets.CIFAR100(
-                root="~/data",
+                root=root,
                 train=True,
                 download=True,
                 transform=build_transforms("cifar10", "train", args=args),
             )
         elif type == "val":
             dataset_type = datasets.CIFAR100(
-                root="~/data",
+                root=root,
                 train=False,
                 download=True,
                 transform=build_transforms("cifar10", "val", args=args),
             )
     else:
         raise "Type Error: {} Not Supported".format(name)
-    
+
     if fast:
         # fast train using ratio% images
         ratio = 0.5
@@ -142,14 +141,14 @@ def build_dataloader(name="cifar10", type="train", args=None, fast=False):
         num_classes = 10
         if type == "train":
             dataloader_type = DataLoader(
-                build_dataset("train", "cifar10", "~/data", args=args, fast=fast),
+                build_dataset("train", "cifar10", args.root, args=args, fast=fast),
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,
             )
         elif type == "val":
             dataloader_type = DataLoader(
-                build_dataset("val", "cifar10", "~/data", args=args, fast=fast),
+                build_dataset("val", "cifar10", args.root, args=args, fast=fast),
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,
@@ -158,14 +157,14 @@ def build_dataloader(name="cifar10", type="train", args=None, fast=False):
         num_classes = 100
         if type == "train":
             dataloader_type = DataLoader(
-                build_dataset("train", "cifar100", "~/data", args=args, fast=fast),
+                build_dataset("train", "cifar100", args.root, args=args, fast=fast),
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,
             )
         elif type == "val":
             dataloader_type = DataLoader(
-                build_dataset("val", "cifar100", "~/data", args=args,fast=fast),
+                build_dataset("val", "cifar100", args.root, args=args, fast=fast),
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,

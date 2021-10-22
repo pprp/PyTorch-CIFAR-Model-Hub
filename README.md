@@ -67,8 +67,8 @@ reimplementation models(no augmentation, half data，epoch200，bs128)
 | densenet                     |   （92.06）   |                 |          |        |
 | dla                          |   （92.58）   |                 |          |        |
 | googlenet                    |   （91.90）   |     0.2675      |          |        |
-| shufflenet                   |               |                 |          |        |
-| shufflenetv2                 |               |                 |          |        |
+| shufflenet                   |       x       |                 |          |        |
+| shufflenetv2                 |       x       |                 |          |        |
 | efficientnetb0(利用率低且慢) |   （86.82）   |     0.5024      |          |        |
 | mobilenet(利用率低)          |   （89.18）   |                 |          |        |
 | mobilenetv2                  |               |                 |          |        |
@@ -77,15 +77,15 @@ reimplementation models(no augmentation, half data，epoch200，bs128)
 | resnext                      |               |                 |          |        |
 | vgg(cpugpu利用率都高)        |   （88.38）   |                 |          |        |
 | attention56                  |               |                 |          |        |
-| attention92                  |               | (**v100:gpu0**) |   51s    |        |
+| attention92                  |      nan      |                 |   51s    |        |
 | inceptionv3                  |               |                 |          |        |
 | inceptionv4                  |               |                 |          |        |
 | inception_resnet_v2          |               |                 |          |        |
 | rir                          |   （92.34）   |     0.3932      |          |        |
 | squeezenet(CPU利用率高)      |   （89.16）   |     0.4311      |    5s    |        |
-| stochastic_depth_resnet18    |               | (**v100:gpu1**) |    6s    |        |
+| stochastic_depth_resnet18    |   （90.22）   | (**v100:gpu1**) |    6s    |        |
 | xception                     |               |                 |          |        |
-| dpn                          |               |                 |          |        |
+| dpn                          |               | (**v100:gpu0**) |          |        |
 | ge_resnext29_8x64d           |               |      巨慢       |          |        |
 | ge_resnext29_16x64d          |               |                 |          |        |
 | sk_resnext29_16x32d          |               |       OOM       |          |        |
@@ -108,6 +108,10 @@ TEST: scale/kernel ToyNet
 | s=2,k=3 |            |        |        |        |
 |         |            |        |        |        |
 
+结论：lenet这种卷积量比较少，只有两层的，cpu利用率高，gpu利用率低。在这个基础上增加深度，用vgg那种直筒方式增加深度，发现深度越深，cpu利用率越低，gpu利用率越高。
+
+
+
 TEST: scale/kernel ToyNet(s=1,k=5)
 
 | Model  | Error rate |  Loss  | CPU(%) | GPU(%) |
@@ -116,5 +120,6 @@ TEST: scale/kernel ToyNet(s=1,k=5)
 | bs=256 |            |        |   99   | 20     |
 | bs=16  |   不收敛   |        |        | 20     |
 | bs=32  |   不收敛   |        |  70+   | 20     |
-| bs=64  |    收敛    |        |        |        |
-|        |            |        |        |        |
+| bs=64  |            |        |  88+   | 21     |
+
+结论：bs会影响收敛效果。

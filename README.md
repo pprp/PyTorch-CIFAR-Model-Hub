@@ -99,27 +99,25 @@ reimplementation models(no augmentation, half data，epoch200，bs128)
 
 TEST: scale/kernel ToyNet
 
-| Model   | Error rate |  Loss  | CPU(%) | GPU(%) |
-| :------ | :--------: | :----: | :----: | ------ |
-| s=1,k=5 |   73.05    | 0.8050 |  88+   | 20+    |
-| s=2,k=5 |            |        |        |        |
-| s=3,k=5 |            |        |        |        |
-| s=4,k=5 |            |        |        |        |
-| s=2,k=3 |            |        |        |        |
-|         |            |        |        |        |
-
 结论：lenet这种卷积量比较少，只有两层的，cpu利用率高，gpu利用率低。在这个基础上增加深度，用vgg那种直筒方式增加深度，发现深度越深，cpu利用率越低，gpu利用率越高。
 
-
-
-TEST: scale/kernel ToyNet(s=1,k=5)
-
-| Model  | Error rate |  Loss  | CPU(%) | GPU(%) |
-| :----- | :--------: | :----: | :----: | ------ |
-| bs=128 |   73.05    | 0.8050 |  88+   | 20     |
-| bs=256 |            |        |   99   | 20     |
-| bs=16  |   不收敛   |        |        | 20     |
-| bs=32  |   不收敛   |        |  70+   | 20     |
-| bs=64  |            |        |  88+   | 21     |
-
 结论：bs会影响收敛效果。
+
+
+
+
+
+and the `√` means which additional method be used. 🍰
+
+| architecture         | epoch | cutout | mixup | C10 test acc (%) |
+| -------------------- | ----- | ------ | ----- | ---------------- |
+|                      |       |        |       |                  |
+| shake_resnet26_2x64d | 1800  |        |       | 96.94            |
+| shake_resnet26_2x64d | 1800  | √      |       | **97.20**        |
+| shake_resnet26_2x64d | 1800  |        | √     | **97.42**        |
+| shake_resnet26_2x64d | 1800  | √      | √     | **97.71**        |
+
+PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
+
+
+

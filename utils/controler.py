@@ -48,6 +48,12 @@ def build_scheduler(args, optimizer):
             milestones=[int(e) for e in args.milestones.split(",")],
             gamma=args.gamma,
         )
+    elif args.sched == "cosine":
+        scheduler = lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=args.epochs,
+            eta_min=0
+        )
     else:
         raise "Not Implemented."
 

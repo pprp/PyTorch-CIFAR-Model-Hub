@@ -109,7 +109,7 @@ class RiRBlock(nn.Module):
         return layers
 
 class ResnetInResneet(nn.Module):
-    def __init__(self, num_classes=100):
+    def __init__(self, num_classes=10):
         super().__init__()
         base = int(96 / 2)
         self.residual_pre_conv = nn.Sequential(
@@ -133,8 +133,8 @@ class ResnetInResneet(nn.Module):
         self.rir8 = RiRBlock(base * 4, base * 4, 2, 1)
 
         self.conv1 = nn.Sequential(
-            nn.Conv2d(384, num_classes, kernel_size=3, stride=2), #without this convolution, loss will soon be nan
-            nn.BatchNorm2d(num_classes),
+            nn.Conv2d(384, num_classes*10, kernel_size=3, stride=2), #without this convolution, loss will soon be nan
+            nn.BatchNorm2d(num_classes*10),
             nn.ReLU(inplace=True),
         )
 
@@ -169,7 +169,7 @@ class ResnetInResneet(nn.Module):
     def _weight_init(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal(m.weight)
+                torch.nn.init.kaiming_normal_(m.weight)
                 m.bias.data.fill_(0.01)
 
 

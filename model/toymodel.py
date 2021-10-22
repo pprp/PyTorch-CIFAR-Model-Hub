@@ -8,7 +8,7 @@ __all__ = ["ToyNet"]
 
 
 class ToyNet(nn.Module):
-    def __init__(self, scale=1, kernel=3, num_classes=10):
+    def __init__(self, scale=1, kernel=5, num_classes=10):
         super(ToyNet, self).__init__()
 
         if kernel == 5:
@@ -36,9 +36,6 @@ class ToyNet(nn.Module):
 
     def forward(self, x):
         out = self.stem(x)
-
-        print(out.shape)
-
         out = out.view(out.size(0), -1)
         out = F.relu(self.fc1(out))
         out = F.relu(self.fc2(out))

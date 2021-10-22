@@ -40,6 +40,7 @@ from .shufflenetv2 import *
 from .stochasticdepth import *
 from .vgg import *
 from .xception import *
+from .toymodel import ToyNet
 from .wide_resnet import WideResNet
 
 __model_factory = {
@@ -86,6 +87,7 @@ __model_factory = {
     "sk_resnext29_16x64d": sk_resnext29_16x64d,
     "cbam_resnext29_16x64d": cbam_resnext29_16x64d,
     "cbam_resnext29_8x64d": cbam_resnext29_8x64d,
+    "toynet": ToyNet,
 }
 
 

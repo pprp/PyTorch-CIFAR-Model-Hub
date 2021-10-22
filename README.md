@@ -51,60 +51,70 @@ reimplementation augmentation
 
 reimplementation models(no augmentation, half data，epoch200，bs128)
 
-| Model                        |    Error rate     | Loss | Epoch(s) | Params |
-| :--------------------------- | :---------------: | :--: | :------: | ------ |
-| lenet(cpu爆炸)               |     （70.76）     |      |          |        |
-| wideresnet                   |   3.78（96.22）   |      |          |        |
-| resnet20                     |     （89.72）     |      |          |        |
-| senet                        |     （92.34）     |      |          |        |
-| resnet18                     |     （92.08）     |      |          |        |
-| resnet34                     |     （92.48）     |      |          |        |
-| resnet50                     |     （91.72）     |      |          |        |
-| regnet                       |     （92.58）     |      |          |        |
-| nasnet                       |    out of mem     |      |          |        |
-| shake_resnet26_2x32d         |     （93.06）     |      |          |        |
-| shake_resnet26_2x64d         |     （94.14）     |      |          |        |
-| densenet                     |     （92.06）     |      |          |        |
-| dla                          |     （92.58）     |      |          |        |
-| googlenet                    |                   |      |          |        |
-| shufflenet                   |                   |      |          |        |
-| shufflenetv2                 |                   |      |          |        |
-| efficientnetb0(利用率低且慢) |  (**v100:gpu0**)  |      |          |        |
-| mobilenet(利用率低)          | （**v100:gpu1**） |      |          |        |
-| mobilenetv2                  |                   |      |          |        |
-| pnasnet                      |                   |      |          |        |
-| preact_resnet                |                   |      |          |        |
-| resnext                      |                   |      |          |        |
-| vgg(cpugpu利用率都高)        |                   |      |          |        |
-| attention56                  |                   |      |          |        |
-| attention92                  |                   |      |          |        |
-| inceptionv3                  |                   |      |          |        |
-| inceptionv4                  |                   |      |          |        |
-| inception_resnet_v2          |                   |      |          |        |
-| rir                          |   (**220:0**)x    |      |          |        |
-| squeezenet                   |                   |      |          |        |
-| stochastic_depth_resnet18    |                   |      |          |        |
-| xception                     |                   |      |          |        |
-| dpn                          |                   |      |          |        |
-| ge_resnext29_8x64d           |                   |      |          |        |
-| ge_resnext29_16x64d          |                   |      |          |        |
-| sk_resnext29_16x32d          |                   |      |          |        |
-| sk_resnext29_16x64d          |                   |      |          |        |
-| cbam_resnext29_16x64d        |                   |      |          |        |
-| cbam_resnext29_8x64d         |                   |      |          |        |
+| Model                        |  Error rate   |      Loss       | Epoch(s) | Params |
+| :--------------------------- | :-----------: | :-------------: | :------: | ------ |
+| lenet(cpu爆炸)               |   （70.76）   |                 |          |        |
+| wideresnet                   | 3.78（96.22） |                 |          |        |
+| resnet20                     |   （89.72）   |                 |          |        |
+| senet                        |   （92.34）   |                 |          |        |
+| resnet18                     |   （92.08）   |                 |          |        |
+| resnet34                     |   （92.48）   |                 |          |        |
+| resnet50                     |   （91.72）   |                 |          |        |
+| regnet                       |   （92.58）   |                 |          |        |
+| nasnet                       |  out of mem   |                 |          |        |
+| shake_resnet26_2x32d         |   （93.06）   |                 |          |        |
+| shake_resnet26_2x64d         |   （94.14）   |                 |          |        |
+| densenet                     |   （92.06）   |                 |          |        |
+| dla                          |   （92.58）   |                 |          |        |
+| googlenet                    |   （91.90）   |     0.2675      |          |        |
+| shufflenet                   |               |                 |          |        |
+| shufflenetv2                 |               |                 |          |        |
+| efficientnetb0(利用率低且慢) |   （86.82）   |     0.5024      |          |        |
+| mobilenet(利用率低)          |   （89.18）   |                 |          |        |
+| mobilenetv2                  |               |                 |          |        |
+| pnasnet                      |               |                 |          |        |
+| preact_resnet                |               |                 |          |        |
+| resnext                      |               |                 |          |        |
+| vgg(cpugpu利用率都高)        |   （88.38）   |                 |          |        |
+| attention56                  |               |                 |          |        |
+| attention92                  |               | (**v100:gpu0**) |   51s    |        |
+| inceptionv3                  |               |                 |          |        |
+| inceptionv4                  |               |                 |          |        |
+| inception_resnet_v2          |               |                 |          |        |
+| rir                          |   （92.34）   |     0.3932      |          |        |
+| squeezenet(CPU利用率高)      |   （89.16）   |     0.4311      |    5s    |        |
+| stochastic_depth_resnet18    |               | (**v100:gpu1**) |    6s    |        |
+| xception                     |               |                 |          |        |
+| dpn                          |               |                 |          |        |
+| ge_resnext29_8x64d           |               |      巨慢       |          |        |
+| ge_resnext29_16x64d          |               |                 |          |        |
+| sk_resnext29_16x32d          |               |       OOM       |          |        |
+| sk_resnext29_16x64d          |               |       OOM       |          |        |
+| cbam_resnext29_16x64d        |               |                 |          |        |
+| cbam_resnext29_8x64d         |               |                 |          |        |
 
 
 
 
 
-reimplementation scale/kernel ToyNet
+TEST: scale/kernel ToyNet
 
-| Model   | Error rate | Loss | CPU(%) | GPU(%) |
-| :------ | :--------: | :--: | :----: | ------ |
-| s=1,k=5 |            |      |        |        |
-| s=2,k=5 |            |      |        |        |
-| s=3,k=5 |            |      |        |        |
-| s=4,k=5 |            |      |        |        |
-| s=2,k=3 |            |      |        |        |
-|         |            |      |        |        |
+| Model   | Error rate |  Loss  | CPU(%) | GPU(%) |
+| :------ | :--------: | :----: | :----: | ------ |
+| s=1,k=5 |   73.05    | 0.8050 |  88+   | 20+    |
+| s=2,k=5 |            |        |        |        |
+| s=3,k=5 |            |        |        |        |
+| s=4,k=5 |            |        |        |        |
+| s=2,k=3 |            |        |        |        |
+|         |            |        |        |        |
 
+TEST: scale/kernel ToyNet(s=1,k=5)
+
+| Model  | Error rate |  Loss  | CPU(%) | GPU(%) |
+| :----- | :--------: | :----: | :----: | ------ |
+| bs=128 |   73.05    | 0.8050 |  88+   | 20     |
+| bs=256 |            |        |   99   | 20     |
+| bs=16  |   不收敛   |        |        | 20     |
+| bs=32  |   不收敛   |        |  70+   | 20     |
+| bs=64  |    收敛    |        |        |        |
+|        |            |        |        |        |

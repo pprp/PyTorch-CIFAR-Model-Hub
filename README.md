@@ -51,47 +51,47 @@ reimplementation augmentation
 
 reimplementation models(no augmentation, half data，epoch200，bs128)
 
-| Model                                 |  Error rate   | Loss | Epoch(s) | Params |
-| :------------------------------------ | :-----------: | :--: | :------: | ------ |
-| lenet                                 |   （70.76）   |      |          |        |
-| wideresnet                            | 3.78（96.22） |      |          |        |
-| resnet20                              |   （89.72）   |      |          |        |
-| senet                                 |   （92.34）   |      |          |        |
-| resnet18                              |   （92.08）   |      |          |        |
-| resnet34                              |   （92.48）   |      |          |        |
-| resnet50(**v100:gpu0**)               |    running    |      |          |        |
-| regnet(220:0)                         |   （92.58）   |      |          |        |
-| nasnet                                |  out of mem   |      |          |        |
-| shake_resnet26_2x32d                  |   （93.06）   |      |          |        |
-| shake_resnet26_2x64d（**v100:gpu1**） |    running    |      |          |        |
-| densenet                              |   （92.06）   |      |          |        |
-| dla                                   |               |      |          |        |
-| googlenet                             |               |      |          |        |
-| shufflenet                            |               |      |          |        |
-| shufflenetv2                          |               |      |          |        |
-| efficientnetb0                        |               |      |          |        |
-| mobilenet                             |               |      |          |        |
-| mobilenetv2                           |               |      |          |        |
-| pnasnet                               |               |      |          |        |
-| preact_resnet                         |               |      |          |        |
-| resnext                               |               |      |          |        |
-| vgg                                   |               |      |          |        |
-| attention56                           |               |      |          |        |
-| attention92                           |               |      |          |        |
-| inceptionv3                           |               |      |          |        |
-| inceptionv4                           |               |      |          |        |
-| inception_resnet_v2                   |               |      |          |        |
-| rir                                   |               |      |          |        |
-| squeezenet                            |               |      |          |        |
-| stochastic_depth_resnet18             |               |      |          |        |
-| xception                              |               |      |          |        |
-| dpn                                   |               |      |          |        |
-| ge_resnext29_8x64d                    |               |      |          |        |
-| ge_resnext29_16x64d                   |               |      |          |        |
-| sk_resnext29_16x32d                   |               |      |          |        |
-| sk_resnext29_16x64d                   |               |      |          |        |
-| cbam_resnext29_16x64d                 |               |      |          |        |
-| cbam_resnext29_8x64d                  |               |      |          |        |
+| Model                        |    Error rate     | Loss | Epoch(s) | Params |
+| :--------------------------- | :---------------: | :--: | :------: | ------ |
+| lenet(cpu爆炸)               |     （70.76）     |      |          |        |
+| wideresnet                   |   3.78（96.22）   |      |          |        |
+| resnet20                     |     （89.72）     |      |          |        |
+| senet                        |     （92.34）     |      |          |        |
+| resnet18                     |     （92.08）     |      |          |        |
+| resnet34                     |     （92.48）     |      |          |        |
+| resnet50                     |     （91.72）     |      |          |        |
+| regnet                       |     （92.58）     |      |          |        |
+| nasnet                       |    out of mem     |      |          |        |
+| shake_resnet26_2x32d         |     （93.06）     |      |          |        |
+| shake_resnet26_2x64d         |     （94.14）     |      |          |        |
+| densenet                     |     （92.06）     |      |          |        |
+| dla                          |     （92.58）     |      |          |        |
+| googlenet                    |                   |      |          |        |
+| shufflenet                   |                   |      |          |        |
+| shufflenetv2                 |                   |      |          |        |
+| efficientnetb0(利用率低且慢) |  (**v100:gpu0**)  |      |          |        |
+| mobilenet(利用率低)          | （**v100:gpu1**） |      |          |        |
+| mobilenetv2                  |                   |      |          |        |
+| pnasnet                      |                   |      |          |        |
+| preact_resnet                |                   |      |          |        |
+| resnext                      |                   |      |          |        |
+| vgg(cpugpu利用率都高)        |                   |      |          |        |
+| attention56                  |                   |      |          |        |
+| attention92                  |                   |      |          |        |
+| inceptionv3                  |                   |      |          |        |
+| inceptionv4                  |                   |      |          |        |
+| inception_resnet_v2          |                   |      |          |        |
+| rir                          |   (**220:0**)x    |      |          |        |
+| squeezenet                   |                   |      |          |        |
+| stochastic_depth_resnet18    |                   |      |          |        |
+| xception                     |                   |      |          |        |
+| dpn                          |                   |      |          |        |
+| ge_resnext29_8x64d           |                   |      |          |        |
+| ge_resnext29_16x64d          |                   |      |          |        |
+| sk_resnext29_16x32d          |                   |      |          |        |
+| sk_resnext29_16x64d          |                   |      |          |        |
+| cbam_resnext29_16x64d        |                   |      |          |        |
+| cbam_resnext29_8x64d         |                   |      |          |        |
 
 
 

@@ -49,13 +49,13 @@ def parse_args():
     parser.add_argument(
         "--optims",
         default="sgd",
-        choices=["sgd", "adabound", "adaboundw"],
+        choices=["sgd", "adabound", "adaboundw", "nesterov"],
         help="optimizer name support sgd, adabound",
     )
     parser.add_argument(
         "--sched",
         default="multistep",
-        choices=["warmup", "multistep", "cosine"],
+        choices=["warmup", "multistep", "cosine", "warmcosine"],
         help="select scheduler",
     )
     parser.add_argument(

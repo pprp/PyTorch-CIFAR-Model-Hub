@@ -3,9 +3,34 @@ This repository contains code for a data augmentation method **RICAP (Random Ima
 
 ![example](example.png)
 
+[TOC]
+
 ## Requirements
 - Python 3.6
 - PyTorch 0.4 or 1.0
+
+## Tricks
+
+- Warmup 
+- Cosine LR Decay
+- SAM
+- Label Smooth
+- KD
+- Adabound
+- Xavier Kaiming init
+
+
+
+## Augmentation
+
+- Auto Augmentation
+- Cutout
+- Mixup
+- RICP
+- Random Erase
+- ShakeDrop
+
+
 
 ## Training
 ### CIFAR-10
@@ -92,6 +117,8 @@ reimplementation models(no augmentation, half data，epoch200，bs128)
 | sk_resnext29_16x64d          |               |       OOM       |          |        |
 | cbam_resnext29_16x64d        |               |                 |          |        |
 | cbam_resnext29_8x64d         |               |                 |          |        |
+| pyramidnet164(shakeDrop)     |               |                 |          |        |
+| pyramidnet272(shakeDrop)     |               |                 |          |        |
 
 
 
@@ -111,13 +138,58 @@ and the `√` means which additional method be used. 🍰
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
-|                      |       |        |       |                  |
+| shake_resnet26_2x64d | 200   |        |       | 96.33            |
+| shake_resnet26_2x64d | 200   | √      |       | 96.99            |
+| shake_resnet26_2x64d | 200   |        | √     |                  |
+| shake_resnet26_2x64d | 200   | √      | √     | **97.71**        |
+
+PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
+
+
+
+| architecture         | epoch | cutout | mixup | C10 test acc (%) |
+| -------------------- | ----- | ------ | ----- | ---------------- |
 | shake_resnet26_2x64d | 1800  |        |       | 96.94            |
 | shake_resnet26_2x64d | 1800  | √      |       | **97.20**        |
 | shake_resnet26_2x64d | 1800  |        | √     | **97.42**        |
 | shake_resnet26_2x64d | 1800  | √      | √     | **97.71**        |
 
-PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
 
 
+
+
+## Divide and Co-training方案研究
+
+- lr:
+  - warmup (20 epoch)
+  - cosine lr decay
+  - lr=0.1
+  - total epoch(300 epoch)
+- bs=128
+- aug:
+  - Random Crop and resize
+  - Random left-right flipping
+  - AutoAugment
+  - Normalization
+  - Random Erasing
+  - Mixup
+- weight decay=5e-4 (bias and bn undecayed)
+- kaiming weight init
+- optimizer: nesterov
+
+
+
+复现：
+
+```bash
+python train.py --model 'pyramidnet272' \
+                --name 'divide-co-train' \
+                --autoaugmentation True \
+                --random-erase True \
+                --mixup True \
+                --epochs 300 \
+                --schded 'warmcosine' \
+                --optims 'nesterov' \
+                --bs 128
+```
 

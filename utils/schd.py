@@ -135,14 +135,14 @@ if __name__ == '__main__':
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
     # scheduler = StepLR(optimizer, initial_lr, total_epoch)
     # scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_epoch, eta_min=0.0001)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_epoch, eta_min=0.0001)
     # a_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
     #                                                 lambda step: (1.0-step/total_epoch), last_epoch=-1)
-    # a_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+    a_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
     # a_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
     #                                                    milestones=[100, 150], last_epoch=-1)
-    # scheduler = GradualWarmupScheduler(
-    #     optimizer, 1, total_epoch=5, after_scheduler=a_scheduler)
+    scheduler = GradualWarmupScheduler(
+        optimizer, 1, total_epoch=5, after_scheduler=a_scheduler)
     # scheduler = LambdaLR(optimizer, lambda step : (1.0-step/total_epoch), last_epoch=-1)
     # scheduler = CosineAnnealingWarmRestarts(optimizer,T_0=5,T_mult=2)
 

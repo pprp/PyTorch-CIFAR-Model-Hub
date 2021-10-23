@@ -42,9 +42,10 @@ from .vgg import *
 from .xception import *
 from .toymodel import ToyNet
 from .wide_resnet import WideResNet
+from .pyramidnet import pyramidnet164, pyramidnet272
 
 __model_factory = {
-    'wideresnet': WideResNet,
+    "wideresnet": WideResNet,
     "resnet20": resnet20,
     "densenet": densenet_cifar,
     "senet": senet18_cifar,
@@ -88,6 +89,8 @@ __model_factory = {
     "cbam_resnext29_16x64d": cbam_resnext29_16x64d,
     "cbam_resnext29_8x64d": cbam_resnext29_8x64d,
     "toynet": ToyNet,
+    "pyramidnet272": pyramidnet272,
+    "pyramidnet164": pyramidnet164,
 }
 
 

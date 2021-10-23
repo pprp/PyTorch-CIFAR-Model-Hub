@@ -8,6 +8,7 @@ from torch.utils.data.dataset import random_split
 
 from utils.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
+from utils.schd import GradualWarmupScheduler
 from utils.warmup import WarmupMultiStepLR
 
 """
@@ -22,6 +23,14 @@ def build_optimizer(model, args):
             lr=args.lr,
             momentum=args.momentum,
             weight_decay=args.weight_decay,
+        )
+    elif args.optims == "nesterov":
+        optimizer = optim.SGD(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=args.lr,
+            momentum=args.momentum,
+            weight_decay=args.weight_decay,
+            nesterov=True,
         )
     elif args.optims == "adabound":
         optimizer = AdaBound(
@@ -50,9 +59,13 @@ def build_scheduler(args, optimizer):
         )
     elif args.sched == "cosine":
         scheduler = lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=args.epochs,
-            eta_min=0
+            optimizer, T_max=args.epochs, eta_min=0
+        )
+    elif args.sched == "warmcosine":
+        # cifar slow / total = 20 / 300
+        tmp_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+        scheduler = GradualWarmupScheduler(
+            optimizer, 1, total_epoch=20, after_scheduler=tmp_scheduler
         )
     else:
         raise "Not Implemented."

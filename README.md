@@ -1,4 +1,5 @@
 # A PyTorch implementation of RICAP
+
 This repository contains code for a data augmentation method **RICAP (Random Image Cropping And Patching)** based on [Data Augmentation using Random Image Cropping and Patching for Deep CNNs](https://arxiv.org/abs/1811.09030) implemented in PyTorch.
 
 ![example](example.png)
@@ -6,6 +7,7 @@ This repository contains code for a data augmentation method **RICAP (Random Ima
 [TOC]
 
 ## Requirements
+
 - Python 3.6
 - PyTorch 0.4 or 1.0
 
@@ -33,25 +35,35 @@ This repository contains code for a data augmentation method **RICAP (Random Ima
 
 
 ## Training
+
 ### CIFAR-10
+
 WideResNet28-10 baseline on CIFAR-10:
+
 ```
 python train.py --dataset cifar10
 ```
+
 WideResNet28-10 +RICAP on CIFAR-10:
+
 ```
 python train.py --dataset cifar10 --ricap True
 ```
+
 WideResNet28-10 +Random Erasing on CIFAR-10:
+
 ```
 python train.py --dataset cifar10 --random-erase True
 ```
+
 WideResNet28-10 +Mixup on CIFAR-10:
+
 ```
 python train.py --dataset cifar10 --mixup True
 ```
 
 ## Results
+
 | Model                           |    Error rate     |   Loss    | Error rate (paper) |
 | :------------------------------ | :---------------: | :-------: | :----------------: |
 | WideResNet28-10 baseline        |   3.82（96.18）   |   0.158   |        3.89        |
@@ -76,49 +88,38 @@ reimplementation augmentation
 
 reimplementation models(no augmentation, half data，epoch200，bs128)
 
-| Model                        |  Error rate   |      Loss       | Epoch(s) | Params |
-| :--------------------------- | :-----------: | :-------------: | :------: | ------ |
-| lenet(cpu爆炸)               |   （70.76）   |                 |          |        |
-| wideresnet                   | 3.78（96.22） |                 |          |        |
-| resnet20                     |   （89.72）   |                 |          |        |
-| senet                        |   （92.34）   |                 |          |        |
-| resnet18                     |   （92.08）   |                 |          |        |
-| resnet34                     |   （92.48）   |                 |          |        |
-| resnet50                     |   （91.72）   |                 |          |        |
-| regnet                       |   （92.58）   |                 |          |        |
-| nasnet                       |  out of mem   |                 |          |        |
-| shake_resnet26_2x32d         |   （93.06）   |                 |          |        |
-| shake_resnet26_2x64d         |   （94.14）   |                 |          |        |
-| densenet                     |   （92.06）   |                 |          |        |
-| dla                          |   （92.58）   |                 |          |        |
-| googlenet                    |   （91.90）   |     0.2675      |          |        |
-| shufflenet                   |       x       |                 |          |        |
-| shufflenetv2                 |       x       |                 |          |        |
-| efficientnetb0(利用率低且慢) |   （86.82）   |     0.5024      |          |        |
-| mobilenet(利用率低)          |   （89.18）   |                 |          |        |
-| mobilenetv2                  |               |                 |          |        |
-| pnasnet                      |               |                 |          |        |
-| preact_resnet                |               |                 |          |        |
-| resnext                      |               |                 |          |        |
-| vgg(cpugpu利用率都高)        |   （88.38）   |                 |          |        |
-| attention56                  |               |                 |          |        |
-| attention92                  |      nan      |                 |   51s    |        |
-| inceptionv3                  |               |                 |          |        |
-| inceptionv4                  |               |                 |          |        |
-| inception_resnet_v2          |               |                 |          |        |
-| rir                          |   （92.34）   |     0.3932      |          |        |
-| squeezenet(CPU利用率高)      |   （89.16）   |     0.4311      |    5s    |        |
-| stochastic_depth_resnet18    |   （90.22）   | (**v100:gpu1**) |    6s    |        |
-| xception                     |               |                 |          |        |
-| dpn                          |               | (**v100:gpu0**) |          |        |
-| ge_resnext29_8x64d           |               |      巨慢       |          |        |
-| ge_resnext29_16x64d          |               |                 |          |        |
-| sk_resnext29_16x32d          |               |       OOM       |          |        |
-| sk_resnext29_16x64d          |               |       OOM       |          |        |
-| cbam_resnext29_16x64d        |               |                 |          |        |
-| cbam_resnext29_8x64d         |               |                 |          |        |
-| pyramidnet164(shakeDrop)     |               |                 |          |        |
-| pyramidnet272(shakeDrop)     |               |                 |          |        |
+| Model                        |  Error rate   |  Loss  |    Epoch(s)     | Params  |
+| :--------------------------- | :-----------: | :----: | :-------------: | ------- |
+| lenet(cpu爆炸)               |   （70.76）   |        |                 |         |
+| wideresnet                   | 3.78（96.22） |        |                 |         |
+| resnet20                     |   （89.72）   |        |                 |         |
+| senet                        |   （92.34）   |        |                 |         |
+| resnet18                     |   （92.08）   |        |                 |         |
+| resnet34                     |   （92.48）   |        |                 |         |
+| resnet50                     |   （91.72）   |        |                 |         |
+| regnet                       |   （92.58）   |        |                 |         |
+| nasnet                       |  out of mem   |        |                 |         |
+| shake_resnet26_2x32d         |   （93.06）   |        |                 |         |
+| shake_resnet26_2x64d         |   （94.14）   |        |                 |         |
+| densenet                     |   （92.06）   |        |                 |         |
+| dla                          |   （92.58）   |        |                 |         |
+| googlenet                    |   （91.90）   | 0.2675 |                 |         |
+| efficientnetb0(利用率低且慢) |   （86.82）   | 0.5024 |                 |         |
+| mobilenet(利用率低)          |   （89.18）   |        |                 |         |
+| mobilenetv2                  |   （91.06）   |        |                 |         |
+| pnasnet                      |   （90.44）   |        |                 |         |
+| preact_resnet                |   （90.76）   |        |                 |         |
+| resnext                      |   （92.30）   |        |                 |         |
+| vgg(cpugpu利用率都高)        |   （88.38）   |        |                 |         |
+| inceptionv3                  |   （91.84）   |        |                 |         |
+| inceptionv4                  |   （91.10）   |        |                 |         |
+| inception_resnet_v2          |   （83.46）   |        |                 |         |
+| rir                          |   （92.34）   | 0.3932 |                 |         |
+| squeezenet(CPU利用率高)      |   （89.16）   | 0.4311 |       5s        |         |
+| stochastic_depth_resnet18    |   （90.22）   |        |       6s        |         |
+| xception                     |               |        |                 |         |
+| dpn                          |   （92.06）   | 0.3002 |       24s       |         |
+| ge_resnext29_8x64d           |   （93.86）   |  巨慢  | (**v100:gpu0**) | running |
 
 
 
@@ -134,18 +135,35 @@ TEST: scale/kernel ToyNet
 
 
 
-and the `√` means which additional method be used. 🍰
+stepLR 200 epoch
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
 | shake_resnet26_2x64d | 200   |        |       | 96.33            |
 | shake_resnet26_2x64d | 200   | √      |       | 96.99            |
-| shake_resnet26_2x64d | 200   |        | √     |                  |
-| shake_resnet26_2x64d | 200   | √      | √     | **97.71**        |
+| shake_resnet26_2x64d | 200   |        | √     | 96.60            |
+| shake_resnet26_2x64d | 200   | √      | √     | 96.46            |
+
+
+
+
+
+
 
 PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
 
+cosine lr
 
+| architecture         | epoch | cutout | mixup | C10 test acc (%) |
+| -------------------- | ----- | ------ | ----- | ---------------- |
+| shake_resnet26_2x64d | 300   |        |       |                  |
+| shake_resnet26_2x64d | 300   | √      |       |                  |
+| shake_resnet26_2x64d | 300   |        | √     |                  |
+| shake_resnet26_2x64d | 300   | √      | √     |                  |
+
+
+
+1800 epoch CIFAR ZOO中结果。
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
@@ -179,17 +197,53 @@ PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `
 
 
 
-复现：
+复现：((**v100:gpu1**)  4min*300/60=20h) top1: **97.59%**
 
 ```bash
 python train.py --model 'pyramidnet272' \
                 --name 'divide-co-train' \
-                --autoaugmentation True \
+                --autoaugmentation True \ 
                 --random-erase True \
                 --mixup True \
                 --epochs 300 \
-                --schded 'warmcosine' \
+                --sched 'warmcosine' \
                 --optims 'nesterov' \
-                --bs 128
+                --bs 128 \
+                --root '/home/dpj/project/data'
 ```
 
+
+
+warmup (20 epoch)+ cosine +
+
+| architecture | epoch | cutout | mixup | autoaugment | random-erase | C10 test acc (%) |
+| ------------ | ----- | ------ | ----- | ----------- | ------------ | ---------------- |
+| pyramid272   | 300   |        |       |             |              |                  |
+| pyramid272   | 300   | √      |       |             |              |                  |
+| pyramid272   | 300   |        | √     |             |              |                  |
+| pyramid272   | 300   |        |       | √           |              |                  |
+| pyramid272   | 300   |        |       |             | √            |                  |
+| pyramid272   | 300   | √      | √     |             |              |                  |
+| pyramid272   | 300   | √      |       | √           |              |                  |
+| pyramid272   | 300   | √      |       |             | √            |                  |
+| pyramid272   | 300   |        | √     | √           |              |                  |
+| pyramid272   | 300   |        | √     |             | √            |                  |
+| pyramid272   | 300   |        |       | √           | √            |                  |
+|              |       |        |       |             |              |                  |
+|              |       |        |       |             |              |                  |
+|              |       |        |       |             |              |                  |
+|              |       |        |       |             |              |                  |
+
+```python
+python train.py --model 'pyramid272' --name 'pyramid_orgin' 
+python train.py --model 'pyramid272' --name 'pyramid_c' --cutout True
+python train.py --model 'pyramid272' --name 'pyramid_m' --mixup True
+python train.py --model 'pyramid272' --name 'pyramid_a' --autoaugmentation True 
+python train.py --model 'pyramid272' --name 'pyramid_r' --random-erase True 
+python train.py --model 'pyramid272' --name 'pyramid_cm'  --cutout True --mixup True
+python train.py --model 'pyramid272' --name 'pyramid_ca' --cutout True --autoaugmentation True
+python train.py --model 'pyramid272' --name 'pyramid_cr' --cutout True --random-erase True
+python train.py --model 'pyramid272' --name 'pyramid_ma' --mixup True --autoaugmentation True
+python train.py --model 'pyramid272' --name 'pyramid_mr' --mixup True --random-erase True
+python train.py --model 'pyramid272' --name 'pyramid_ar' --autoaugmentation True --random-erase True 
+```

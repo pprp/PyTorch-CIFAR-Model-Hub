@@ -152,14 +152,14 @@ stepLR 200 epoch
 
 PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
 
-cosine lr
+cosine lr + 300epochs
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
-| shake_resnet26_2x64d | 300   |        |       |                  |
+| shake_resnet26_2x64d | 300   |        |       | 96.66            |
 | shake_resnet26_2x64d | 300   | √      |       |                  |
 | shake_resnet26_2x64d | 300   |        | √     |                  |
-| shake_resnet26_2x64d | 300   | √      | √     |                  |
+| shake_resnet26_2x64d | 300   | √      | √     | **96.73**        |
 
 
 
@@ -167,10 +167,10 @@ cosine lr
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
-| shake_resnet26_2x64d | 1800  |        |       | 96.94            |
-| shake_resnet26_2x64d | 1800  | √      |       | **97.20**        |
-| shake_resnet26_2x64d | 1800  |        | √     | **97.42**        |
-| shake_resnet26_2x64d | 1800  | √      | √     | **97.71**        |
+| shake_resnet26_2x64d | 1800  |        |       | 96.94?           |
+| shake_resnet26_2x64d | 1800  | √      |       | **97.20**?       |
+| shake_resnet26_2x64d | 1800  |        | √     | **97.42**?       |
+| shake_resnet26_2x64d | 1800  | √      | √     | **97.71**?       |
 
 
 

@@ -1,6 +1,7 @@
 import argparse
 from torch.cuda.amp import GradScaler as GradScaler
-import os 
+import os
+
 
 def str2bool(v):
     if v.lower() in ["true", 1]:
@@ -17,11 +18,9 @@ def parse_args():
     parser.add_argument("--model", default="wideresnet", help="select model")
 
     parser.add_argument(
-        "--name", default='gpu0', help="experiment name: (default: cifar10_ricap)"
+        "--name", default="gpu0", help="experiment name: (default: cifar10_ricap)"
     )
-    parser.add_argument(
-        '--gpu', default='0', type=str, help='gpu id'
-    )
+    parser.add_argument("--gpu", default="0", type=str, help="gpu id")
     parser.add_argument(
         "--config", help="configuration file", type=str, default="config/default.yaml"
     )
@@ -33,12 +32,10 @@ def parse_args():
         choices=["cifar10", "cifar100"],
         help="dataset name",
     )
+    parser.add_argument("--root", default="~/data", help="root of dataset")
     parser.add_argument(
-        '--root',
-        default="~/data",
-        help='root of dataset'
+        "--fast", default=False, type=str2bool, help="train part of cifar10"
     )
-    parser.add_argument("--fast", default=False, type=str2bool, help='train part of cifar10')
     parser.add_argument("--bs", default=128, type=int, help="use RICAP")
     parser.add_argument("--nw", default=4, type=int, help="use RICAP")
 
@@ -96,9 +93,16 @@ def parse_args():
     parser.add_argument("--mixup", default=False, type=str2bool, help="use Mixup")
     parser.add_argument("--mixup-alpha", default=1.0, type=float)
 
+    # AUGMENTATION: cutmix
+    parser.add_argument(
+        "--cutmix", default=False, type=str2bool, help="using cutmix or not"
+    )
+    parser.add_argument("--cutmix_prob", default=0.5, type=float, help="cutmix prob")
+    parser.add_argument("--beta", default=0, type=float, help="hyperparameter beta")
+
     args = parser.parse_args()
 
     if args.amp:
         args.scaler = GradScaler()
-    
+
     return args

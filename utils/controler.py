@@ -10,6 +10,7 @@ from utils.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
 from utils.schd import GradualWarmupScheduler
 from utils.warmup import WarmupMultiStepLR
+from ASAM.asam import SAM, ASAM
 
 """
 Generate optimizer and scheduler
@@ -40,6 +41,32 @@ def build_optimizer(model, args):
         optimizer = AdaBoundW(
             filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr
         )
+    elif args.optims == "sam":
+        opt = optim.SGD(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=args.lr,
+            momentum=args.momentum,
+            weight_decay=args.weight_decay,
+        )
+        optimizer = SAM(
+            optimizer=opt,
+            model=model,
+            rho=0.5,
+            eta=0,
+        )
+    elif args.optims == "asam":
+        opt = optim.SGD(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=args.lr,
+            momentum=args.momentum,
+            weight_decay=args.weight_decay,
+        )
+        optimizer = ASAM(
+            optimizer=opt,
+            model=model,
+            rho=0.5,
+            eta=0,
+        )
     else:
         raise "Not Implemented."
 
@@ -47,6 +74,10 @@ def build_optimizer(model, args):
 
 
 def build_scheduler(args, optimizer):
+
+    if args.optims in ["sam", "asam"]:
+        optimizer = optimizer.optimizer
+
     if args.sched == "warmup":
         scheduler = WarmupMultiStepLR(
             optimizer=optimizer, milestones=[int(e) for e in args.milestones.split(",")]

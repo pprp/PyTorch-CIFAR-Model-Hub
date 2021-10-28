@@ -21,8 +21,6 @@ This repository contains code for a data augmentation method **RICAP (Random Ima
 - Adabound
 - Xavier Kaiming init
 
-
-
 ## Augmentation
 
 - Auto Augmentation
@@ -145,6 +143,13 @@ stepLR 200 epoch
 | shake_resnet26_2x64d | 200   | √      | √     | 96.46            |
 
 
+
+| architecture         | epoch | SAM  | ASAM | Cosine LR Decay | LabelSmooth | C10 test acc (%) |
+| -------------------- | ----- | ---- | ---- | --------------- | ----------- | ---------------- |
+| shake_resnet26_2x64d | 200   | √    |      |                 |             |                  |
+| shake_resnet26_2x64d | 200   |      | √    |                 |             |                  |
+| shake_resnet26_2x64d | 200   |      |      | √               |             |                  |
+| shake_resnet26_2x64d | 200   |      |      |                 | √           |                  |
 
 
 

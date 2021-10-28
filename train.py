@@ -14,8 +14,12 @@ from tqdm import tqdm
 
 from dataset.dataloader import build_dataloader
 from model import build_model
-from utils.controler import (build_criterion, build_expname, build_optimizer,
-                             build_scheduler)
+from utils.controler import (
+    build_criterion,
+    build_expname,
+    build_optimizer,
+    build_scheduler,
+)
 from utils.utils import *
 from utils.args import parse_args
 
@@ -97,7 +101,15 @@ def train(
                 l * accuracy(output, target_a)[0]
                 + (1 - l) * accuracy(output, target_b)[0]
             )
+        elif args.optims in ["sam", "asam"]:
+            input = input.cuda()
+            target = target.cuda()
+            output = model(input)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.ascent_step()
 
+            acc = accuracy(output, target)[0]
         else:
             input = input.cuda()
             target = target.cuda()
@@ -116,7 +128,10 @@ def train(
             args.scaler.scale(loss).backward()
             args.scaler.step(optimizer)
             args.scaler.update()
-
+        elif args.optims in ["sam", "asam"]:
+            loss = criterion(model(input), target)
+            loss.backward()
+            optimizer.descent_step()
         else:
             optimizer.zero_grad()
             loss.backward()
@@ -175,7 +190,7 @@ def validate(args, val_loader, model, criterion, epoch, writer):
 def main():
     args = parse_args()
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     # process argparse & yaml
     if not args.config:
@@ -273,7 +288,10 @@ def main():
         log.to_csv("exps/%s/log.csv" % args.name, index=False)
 
         if val_log["acc"] > best_acc:
-            torch.save(model.state_dict(), "exps/%s/model_%d.pth" % (args.name, (val_log["acc"]*100)))
+            torch.save(
+                model.state_dict(),
+                "exps/%s/model_%d.pth" % (args.name, (val_log["acc"] * 100)),
+            )
             best_acc = val_log["acc"]
             print("=> saved best model")
 

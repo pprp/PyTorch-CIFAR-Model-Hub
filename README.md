@@ -157,9 +157,9 @@ cosine lr + 300epochs
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
 | shake_resnet26_2x64d | 300   |        |       | 96.66            |
-| shake_resnet26_2x64d | 300   | √      |       |                  |
-| shake_resnet26_2x64d | 300   |        | √     |                  |
-| shake_resnet26_2x64d | 300   | √      | √     | **96.73**        |
+| shake_resnet26_2x64d | 300   | √      |       | 97.21            |
+| shake_resnet26_2x64d | 300   |        | √     | 96.90            |
+| shake_resnet26_2x64d | 300   | √      | √     | 96.73            |
 
 
 
@@ -216,34 +216,34 @@ python train.py --model 'pyramidnet272' \
 
 warmup (20 epoch)+ cosine +
 
-| architecture | epoch | cutout | mixup | autoaugment | random-erase | C10 test acc (%) |
-| ------------ | ----- | ------ | ----- | ----------- | ------------ | ---------------- |
-| pyramid272   | 300   |        |       |             |              |                  |
-| pyramid272   | 300   | √      |       |             |              |                  |
-| pyramid272   | 300   |        | √     |             |              |                  |
-| pyramid272   | 300   |        |       | √           |              |                  |
-| pyramid272   | 300   |        |       |             | √            |                  |
-| pyramid272   | 300   | √      | √     |             |              |                  |
-| pyramid272   | 300   | √      |       | √           |              |                  |
-| pyramid272   | 300   | √      |       |             | √            |                  |
-| pyramid272   | 300   |        | √     | √           |              |                  |
-| pyramid272   | 300   |        | √     |             | √            |                  |
-| pyramid272   | 300   |        |       | √           | √            |                  |
-|              |       |        |       |             |              |                  |
-|              |       |        |       |             |              |                  |
-|              |       |        |       |             |              |                  |
-|              |       |        |       |             |              |                  |
+| architecture         | epoch | cutout | mixup | autoaugment | random-erase | C10 test acc (%) |
+| -------------------- | ----- | ------ | ----- | ----------- | ------------ | ---------------- |
+| shake_resnet26_2x64d | 300   |        |       |             |              |                  |
+| shake_resnet26_2x64d | 300   | √      |       |             |              |                  |
+| shake_resnet26_2x64d | 300   |        | √     |             |              |                  |
+| shake_resnet26_2x64d | 300   |        |       | √           |              |                  |
+| shake_resnet26_2x64d | 300   |        |       |             | √            |                  |
+| shake_resnet26_2x64d | 300   | √      | √     |             |              |                  |
+| shake_resnet26_2x64d | 300   | √      |       | √           |              |                  |
+| shake_resnet26_2x64d | 300   | √      |       |             | √            |                  |
+| shake_resnet26_2x64d | 300   |        | √     | √           |              |                  |
+| shake_resnet26_2x64d | 300   |        | √     |             | √            |                  |
+| shake_resnet26_2x64d | 300   |        |       | √           | √            |                  |
+|                      |       |        |       |             |              |                  |
+|                      |       |        |       |             |              |                  |
+|                      |       |        |       |             |              |                  |
+|                      |       |        |       |             |              |                  |
 
 ```python
-python train.py --model 'pyramid272' --name 'pyramid_orgin' 
-python train.py --model 'pyramid272' --name 'pyramid_c' --cutout True
-python train.py --model 'pyramid272' --name 'pyramid_m' --mixup True
-python train.py --model 'pyramid272' --name 'pyramid_a' --autoaugmentation True 
-python train.py --model 'pyramid272' --name 'pyramid_r' --random-erase True 
-python train.py --model 'pyramid272' --name 'pyramid_cm'  --cutout True --mixup True
-python train.py --model 'pyramid272' --name 'pyramid_ca' --cutout True --autoaugmentation True
-python train.py --model 'pyramid272' --name 'pyramid_cr' --cutout True --random-erase True
-python train.py --model 'pyramid272' --name 'pyramid_ma' --mixup True --autoaugmentation True
-python train.py --model 'pyramid272' --name 'pyramid_mr' --mixup True --random-erase True
-python train.py --model 'pyramid272' --name 'pyramid_ar' --autoaugmentation True --random-erase True 
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_orgin' --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_c' --cutout True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_m' --mixup True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_a' --autoaugmentation True  --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_r' --random-erase True  --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_cm'  --cutout True --mixup True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ca' --cutout True --autoaugmentation True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_cr' --cutout True --random-erase True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ma' --mixup True --autoaugmentation True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_mr' --mixup True --random-erase True --bs 64
+python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentation True --random-erase True  --bs 64
 ```

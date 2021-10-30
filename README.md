@@ -1,17 +1,25 @@
-# A PyTorch implementation of RICAP
+# A PyTorch implementation of CIFAR TRICKS
 
-This repository contains code for a data augmentation method **RICAP (Random Image Cropping And Patching)** based on [Data Augmentation using Random Image Cropping and Patching for Deep CNNs](https://arxiv.org/abs/1811.09030) implemented in PyTorch.
 
-![example](example.png)
 
 [TOC]
 
-## Requirements
+调研了CIFAR10数据集上各种trick，数据增强，正则化方法，并进行了实现。目前项目告一段落，如果有更好的想法，或者希望一起维护这个项目可以提issue或者在我的主页找到我的联系方式。
 
-- Python 3.6
-- PyTorch 0.4 or 1.0
+## 0. Requirements
 
-## Tricks
+- Python 3.6+
+- torch=1.8.0+cu111
+- torchvision+0.9.0+cu111
+- tqdm=4.26.0
+- PyYAML=6.0
+
+
+
+## 1. Implements
+
+
+### 1.1 Tricks
 
 - Warmup 
 - Cosine LR Decay
@@ -21,20 +29,20 @@ This repository contains code for a data augmentation method **RICAP (Random Ima
 - Adabound
 - Xavier Kaiming init
 
-## Augmentation
+### 1.2 Augmentation
 
 - Auto Augmentation
 - Cutout
 - Mixup
-- RICP
+- RICAP
 - Random Erase
 - ShakeDrop
 
 
 
-## Training
+## 2. Training
 
-### CIFAR-10
+### 2.1 CIFAR-10训练示例
 
 WideResNet28-10 baseline on CIFAR-10:
 
@@ -60,7 +68,9 @@ WideResNet28-10 +Mixup on CIFAR-10:
 python train.py --dataset cifar10 --mixup True
 ```
 
-## Results
+## 3. Results
+
+### 3.1 原pytorch-ricap的结果
 
 | Model                           |    Error rate     |   Loss    | Error rate (paper) |
 | :------------------------------ | :---------------: | :-------: | :----------------: |
@@ -69,9 +79,7 @@ python train.py --dataset cifar10 --mixup True
 | WideResNet28-10 +Random Erasing |   3.18（96.82）   | **0.114** |        4.65        |
 | WideResNet28-10 +Mixup          |   3.02（96.98）   |   0.158   |        3.02        |
 
-
-
-reimplementation augmentation 
+### 3.2 Reimplementation结果 
 
 | Model                           |    Error rate     | Loss  | Error rate (paper) |
 | :------------------------------ | :---------------: | :---: | :----------------: |
@@ -80,60 +88,56 @@ reimplementation augmentation
 | WideResNet28-10 +Random Erasing |   3.03（96.97）   | 0.113 |        4.65        |
 | WideResNet28-10 +Mixup          |   2.93（97.07）   | 0.158 |        3.02        |
 
-
-
-
+### 3.3 Half data快速训练验证各网络结构
 
 reimplementation models(no augmentation, half data，epoch200，bs128)
 
-| Model                        |  Error rate   |  Loss  |    Epoch(s)     | Params  |
-| :--------------------------- | :-----------: | :----: | :-------------: | ------- |
-| lenet(cpu爆炸)               |   （70.76）   |        |                 |         |
-| wideresnet                   | 3.78（96.22） |        |                 |         |
-| resnet20                     |   （89.72）   |        |                 |         |
-| senet                        |   （92.34）   |        |                 |         |
-| resnet18                     |   （92.08）   |        |                 |         |
-| resnet34                     |   （92.48）   |        |                 |         |
-| resnet50                     |   （91.72）   |        |                 |         |
-| regnet                       |   （92.58）   |        |                 |         |
-| nasnet                       |  out of mem   |        |                 |         |
-| shake_resnet26_2x32d         |   （93.06）   |        |                 |         |
-| shake_resnet26_2x64d         |   （94.14）   |        |                 |         |
-| densenet                     |   （92.06）   |        |                 |         |
-| dla                          |   （92.58）   |        |                 |         |
-| googlenet                    |   （91.90）   | 0.2675 |                 |         |
-| efficientnetb0(利用率低且慢) |   （86.82）   | 0.5024 |                 |         |
-| mobilenet(利用率低)          |   （89.18）   |        |                 |         |
-| mobilenetv2                  |   （91.06）   |        |                 |         |
-| pnasnet                      |   （90.44）   |        |                 |         |
-| preact_resnet                |   （90.76）   |        |                 |         |
-| resnext                      |   （92.30）   |        |                 |         |
-| vgg(cpugpu利用率都高)        |   （88.38）   |        |                 |         |
-| inceptionv3                  |   （91.84）   |        |                 |         |
-| inceptionv4                  |   （91.10）   |        |                 |         |
-| inception_resnet_v2          |   （83.46）   |        |                 |         |
-| rir                          |   （92.34）   | 0.3932 |                 |         |
-| squeezenet(CPU利用率高)      |   （89.16）   | 0.4311 |       5s        |         |
-| stochastic_depth_resnet18    |   （90.22）   |        |       6s        |         |
-| xception                     |               |        |                 |         |
-| dpn                          |   （92.06）   | 0.3002 |       24s       |         |
-| ge_resnext29_8x64d           |   （93.86）   |  巨慢  | (**v100:gpu0**) | running |
+| Model                        |  Error rate   |  Loss  |
+| :--------------------------- | :-----------: | :----: |
+| lenet(cpu爆炸)               |   （70.76）   |        |
+| wideresnet                   | 3.78（96.22） |        |
+| resnet20                     |   （89.72）   |        |
+| senet                        |   （92.34）   |        |
+| resnet18                     |   （92.08）   |        |
+| resnet34                     |   （92.48）   |        |
+| resnet50                     |   （91.72）   |        |
+| regnet                       |   （92.58）   |        |
+| nasnet                       |  out of mem   |        |
+| shake_resnet26_2x32d         |   （93.06）   |        |
+| shake_resnet26_2x64d         |   （94.14）   |        |
+| densenet                     |   （92.06）   |        |
+| dla                          |   （92.58）   |        |
+| googlenet                    |   （91.90）   | 0.2675 |
+| efficientnetb0(利用率低且慢) |   （86.82）   | 0.5024 |
+| mobilenet(利用率低)          |   （89.18）   |        |
+| mobilenetv2                  |   （91.06）   |        |
+| pnasnet                      |   （90.44）   |        |
+| preact_resnet                |   （90.76）   |        |
+| resnext                      |   （92.30）   |        |
+| vgg(cpugpu利用率都高)        |   （88.38）   |        |
+| inceptionv3                  |   （91.84）   |        |
+| inceptionv4                  |   （91.10）   |        |
+| inception_resnet_v2          |   （83.46）   |        |
+| rir                          |   （92.34）   | 0.3932 |
+| squeezenet(CPU利用率高)      |   （89.16）   | 0.4311 |
+| stochastic_depth_resnet18    |   （90.22）   |        |
+| xception                     |               |        |
+| dpn                          |   （92.06）   | 0.3002 |
+| ge_resnext29_8x64d           |   （93.86）   |  巨慢  |
 
-
-
-
+### 3.4 测试cpu gpu影响
 
 TEST: scale/kernel ToyNet
 
+**修改网络的卷积层深度，并进行训练，可以得到以下结论：**
+
 结论：lenet这种卷积量比较少，只有两层的，cpu利用率高，gpu利用率低。在这个基础上增加深度，用vgg那种直筒方式增加深度，发现深度越深，cpu利用率越低，gpu利用率越高。
+
+**修改训练过程的batch size，可以得到以下结论：**
 
 结论：bs会影响收敛效果。
 
-
-
-
-
-stepLR 200 epoch
+### 3.5 StepLR优化下测试cutout和mixup
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
@@ -142,46 +146,36 @@ stepLR 200 epoch
 | shake_resnet26_2x64d | 200   |        | √     | 96.60            |
 | shake_resnet26_2x64d | 200   | √      | √     | 96.46            |
 
-
+### 3.6 测试SAM,ASAM,Cosine,LabelSmooth
 
 | architecture         | epoch | SAM  | ASAM | Cosine LR Decay | LabelSmooth | C10 test acc (%) |
 | -------------------- | ----- | ---- | ---- | --------------- | ----------- | ---------------- |
-| shake_resnet26_2x64d | 200   | √    |      |                 |             |                  |
-| shake_resnet26_2x64d | 200   |      | √    |                 |             |                  |
-| shake_resnet26_2x64d | 200   |      |      | √               |             |                  |
-| shake_resnet26_2x64d | 200   |      |      |                 | √           |                  |
+| shake_resnet26_2x64d | 200   | √    |      |                 |             | 96.51            |
+| shake_resnet26_2x64d | 200   |      | √    |                 |             | 96.80            |
+| shake_resnet26_2x64d | 200   |      |      | √               |             | 96.61            |
+| shake_resnet26_2x64d | 200   |      |      |                 | √           | 96.57            |
 
+PS:其他库在加长训练过程（epoch=1800）情况下可以实现 `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
 
-
-
-
-PS: `shake_resnet26_2x64d` achieved **97.71%** test accuracy with `cutout` and `mixup`!!
-
-cosine lr + 300epochs
+### 3.7 测试cosine lr + shake
 
 | architecture         | epoch | cutout | mixup | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ---------------- |
 | shake_resnet26_2x64d | 300   |        |       | 96.66            |
-| shake_resnet26_2x64d | 300   | √      |       | 97.21            |
+| shake_resnet26_2x64d | 300   | √      |       | **97.21**        |
 | shake_resnet26_2x64d | 300   |        | √     | 96.90            |
 | shake_resnet26_2x64d | 300   | √      | √     | 96.73            |
 
+1800 epoch CIFAR ZOO中结果，由于耗时过久，未进行复现。
 
+| architecture         | epoch | cutout | mixup | C10 test acc (%)       |
+| -------------------- | ----- | ------ | ----- | ---------------------- |
+| shake_resnet26_2x64d | 1800  |        |       | 96.94（cifar zoo）     |
+| shake_resnet26_2x64d | 1800  | √      |       | **97.20**（cifar zoo） |
+| shake_resnet26_2x64d | 1800  |        | √     | **97.42**（cifar zoo） |
+| shake_resnet26_2x64d | 1800  | √      | √     | **97.71**（cifar zoo） |
 
-1800 epoch CIFAR ZOO中结果。
-
-| architecture         | epoch | cutout | mixup | C10 test acc (%) |
-| -------------------- | ----- | ------ | ----- | ---------------- |
-| shake_resnet26_2x64d | 1800  |        |       | 96.94?           |
-| shake_resnet26_2x64d | 1800  | √      |       | **97.20**?       |
-| shake_resnet26_2x64d | 1800  |        | √     | **97.42**?       |
-| shake_resnet26_2x64d | 1800  | √      | √     | **97.71**?       |
-
-
-
-
-
-## Divide and Co-training方案研究
+### 3.8 Divide and Co-training方案研究
 
 - lr:
   - warmup (20 epoch)
@@ -200,9 +194,7 @@ cosine lr + 300epochs
 - kaiming weight init
 - optimizer: nesterov
 
-
-
-复现：((**v100:gpu1**)  4min*300/60=20h) top1: **97.59%**
+复现：((**v100:gpu1**)  4min*300/60=20h) top1: **97.59%** 本项目目前最高值。
 
 ```bash
 python train.py --model 'pyramidnet272' \
@@ -217,27 +209,21 @@ python train.py --model 'pyramidnet272' \
                 --root '/home/dpj/project/data'
 ```
 
-
-
-warmup (20 epoch)+ cosine +
+### 3.9 测试多种数据增强
 
 | architecture         | epoch | cutout | mixup | autoaugment | random-erase | C10 test acc (%) |
 | -------------------- | ----- | ------ | ----- | ----------- | ------------ | ---------------- |
-| shake_resnet26_2x64d | 300   |        |       |             |              |                  |
-| shake_resnet26_2x64d | 300   | √      |       |             |              |                  |
-| shake_resnet26_2x64d | 300   |        | √     |             |              |                  |
-| shake_resnet26_2x64d | 300   |        |       | √           |              |                  |
-| shake_resnet26_2x64d | 300   |        |       |             | √            |                  |
-| shake_resnet26_2x64d | 300   | √      | √     |             |              |                  |
-| shake_resnet26_2x64d | 300   | √      |       | √           |              |                  |
-| shake_resnet26_2x64d | 300   | √      |       |             | √            |                  |
-| shake_resnet26_2x64d | 300   |        | √     | √           |              |                  |
-| shake_resnet26_2x64d | 300   |        | √     |             | √            |                  |
-| shake_resnet26_2x64d | 300   |        |       | √           | √            |                  |
-|                      |       |        |       |             |              |                  |
-|                      |       |        |       |             |              |                  |
-|                      |       |        |       |             |              |                  |
-|                      |       |        |       |             |              |                  |
+| shake_resnet26_2x64d | 200   |        |       |             |              | 96.42            |
+| shake_resnet26_2x64d | 200   | √      |       |             |              | **96.49**        |
+| shake_resnet26_2x64d | 200   |        | √     |             |              | 96.17            |
+| shake_resnet26_2x64d | 200   |        |       | √           |              | 96.25            |
+| shake_resnet26_2x64d | 200   |        |       |             | √            | 96.20            |
+| shake_resnet26_2x64d | 200   | √      | √     |             |              | 95.82            |
+| shake_resnet26_2x64d | 200   | √      |       | √           |              | 96.02            |
+| shake_resnet26_2x64d | 200   | √      |       |             | √            | 96.00            |
+| shake_resnet26_2x64d | 200   |        | √     | √           |              | 95.83            |
+| shake_resnet26_2x64d | 200   |        | √     |             | √            | 95.89            |
+| shake_resnet26_2x64d | 200   |        |       | √           | √            | 96.25            |
 
 ```python
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_orgin' --bs 64
@@ -252,3 +238,21 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ma' --mixup True --a
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_mr' --mixup True --random-erase True --bs 64
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentation True --random-erase True  --bs 64
 ```
+
+
+
+## 4. Reference
+
+[1] https://github.com/BIGBALLON/CIFAR-ZOO
+
+[2] https://github.com/pprp/MutableNAS
+
+[3] https://github.com/clovaai/CutMix-PyTorch
+
+[4] https://github.com/4uiiurz1/pytorch-ricap
+
+[5] https://github.com/NUDTNASLab/pytorch-image-models
+
+[6] https://github.com/facebookresearch/LaMCTS
+
+[7] https://github.com/Alibaba-MIIL/ImageNet21K

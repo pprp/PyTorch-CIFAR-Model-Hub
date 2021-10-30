@@ -86,6 +86,9 @@ def parse_args():
         "--autoaugmentation", default=False, type=str2bool, help="use auto augmentation"
     )
 
+    # AUGMENTATION: RandAugmentation
+    
+
     # AUGMENTATION: cutout
     parser.add_argument("--cutout", default=False, type=str2bool, help="use cutout")
 
@@ -98,7 +101,7 @@ def parse_args():
         "--cutmix", default=False, type=str2bool, help="using cutmix or not"
     )
     parser.add_argument("--cutmix_prob", default=0.5, type=float, help="cutmix prob")
-    parser.add_argument("--beta", default=0, type=float, help="hyperparameter beta")
+    parser.add_argument("--beta", default=1.0, type=float, help="hyperparameter beta")
 
     args = parser.parse_args()
 

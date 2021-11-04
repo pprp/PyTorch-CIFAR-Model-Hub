@@ -1,8 +1,6 @@
-# A PyTorch implementation of CIFAR TRICKS
+# A PyTorch Implementation of CIFAR Tricks
 
-
-
-[TOC]
+![](utils/logo.png)
 
 调研了CIFAR10数据集上各种trick，数据增强，正则化方法，并进行了实现。目前项目告一段落，如果有更好的想法，或者希望一起维护这个项目可以提issue或者在我的主页找到我的联系方式。
 
@@ -28,6 +26,7 @@
 - KD
 - Adabound
 - Xavier Kaiming init
+- lr finder
 
 ### 1.2 Augmentation
 

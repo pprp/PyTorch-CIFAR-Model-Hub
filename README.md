@@ -14,7 +14,30 @@
 
 
 
+
 ## 1. Implements
+
+### 1.0 Models
+
+vision Transformer:
+
+| Model              | GPU Mem | Top1 |
+| ------------------ | ------- | ---- |
+| vision_transformer | 2869M   |      |
+| mobilevit_s        | 2009M   |      |
+| mobilevit_xs       | 1681M   |      |
+| mobilevit_xxs      | 1175M   |      |
+| coatnet_0          | 1433M   |      |
+| coatnet_1          | 2089M   |      |
+| coatnet_2          | 2405M   |      |
+| coatnet_3          | 3673M   |      |
+| coatnet_4          | 5451M   |      |
+| cvt                | 2593M   |      |
+| swin_t             | 3927M   |      |
+| swin_s             | 6707M   |      |
+| swin_b             | 8855M   |      |
+| swin_l             | OOM     |      |
+
 
 
 ### 1.1 Tricks

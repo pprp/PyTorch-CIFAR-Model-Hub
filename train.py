@@ -130,6 +130,7 @@ def train(
             target = target.cuda()
 
             output = model(input)
+
             loss = criterion(output, target)
 
             acc = accuracy(output, target)[0]

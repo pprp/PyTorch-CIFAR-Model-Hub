@@ -45,6 +45,9 @@ from .wide_resnet import WideResNet
 from .pyramidnet import pyramidnet164, pyramidnet272
 from .vit.vision_transformer import ViT
 from .vit.mobile_vit import *
+from .vit.coatnet import *
+from .vit.cvt import CvT
+from .vit.swin_transformer import *
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -97,6 +100,16 @@ __model_factory = {
     "mobilevit_s": mobilevit_s,
     "mobilevit_xs": mobilevit_xs,
     "mobilevit_xxs": mobilevit_xxs,
+    "coatnet_0": coatnet_0,
+    "coatnet_1": coatnet_1,
+    "coatnet_2": coatnet_2,
+    "coatnet_3": coatnet_3,
+    "coatnet_4": coatnet_4,
+    "cvt": CvT,
+    "swin_t": swin_t,
+    "swin_s": swin_s,
+    "swin_b": swin_b,
+    "swin_l": swin_l,
 }
 
 

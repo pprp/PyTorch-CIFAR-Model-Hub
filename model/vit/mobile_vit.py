@@ -206,11 +206,11 @@ class MobileViT(nn.Module):
 
         self.mv2 = nn.ModuleList([])
         self.mv2.append(MV2Block(channels[0], channels[1], 1, expansion))
-        self.mv2.append(MV2Block(channels[1], channels[2], 2, expansion))
+        self.mv2.append(MV2Block(channels[1], channels[2], 1, expansion)) # from 2 to 1 
         self.mv2.append(MV2Block(channels[2], channels[3], 1, expansion))
         self.mv2.append(MV2Block(channels[2], channels[3], 1, expansion))  # Repeat
         self.mv2.append(MV2Block(channels[3], channels[4], 2, expansion))
-        self.mv2.append(MV2Block(channels[5], channels[6], 1, expansion)) # from 2 to 1
+        self.mv2.append(MV2Block(channels[5], channels[6], 2, expansion))
         self.mv2.append(MV2Block(channels[7], channels[8], 1, expansion)) # from 2 to 1 
 
         self.mvit = nn.ModuleList([])
@@ -232,7 +232,7 @@ class MobileViT(nn.Module):
 
         self.conv2 = conv_1x1_bn(channels[-2], channels[-1])
 
-        self.pool = nn.AvgPool2d(ih // 32, 1)
+        self.pool = nn.AvgPool2d(ih // 8, 1) # from 32 to 8
         self.fc = nn.Linear(channels[-1], num_classes, bias=False)
 
     def forward(self, x):

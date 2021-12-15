@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from utils.utils import RandomErase
-from .autoaugmentation import CIFAR10Policy
+from .autoaugment import CIFAR10Policy
 from .cutout import Cutout
 
 

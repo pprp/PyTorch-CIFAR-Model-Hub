@@ -32,7 +32,7 @@ def parse_args():
         choices=["cifar10", "cifar100"],
         help="dataset name",
     )
-    parser.add_argument("--root", default="~/data", help="root of dataset")
+    parser.add_argument("--root", default="~/datasets", help="root of dataset")
     parser.add_argument(
         "--fast", default=False, type=str2bool, help="train part of cifar10"
     )

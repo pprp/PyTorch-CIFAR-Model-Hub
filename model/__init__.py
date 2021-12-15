@@ -43,6 +43,8 @@ from .xception import *
 from .toymodel import ToyNet
 from .wide_resnet import WideResNet
 from .pyramidnet import pyramidnet164, pyramidnet272
+from .vit.vision_transformer import ViT
+from .vit.mobile_vit import *
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -91,6 +93,10 @@ __model_factory = {
     "toynet": ToyNet,
     "pyramidnet272": pyramidnet272,
     "pyramidnet164": pyramidnet164,
+    "vision_transformer": ViT,
+    "mobilevit_s": mobilevit_s,
+    "mobilevit_xs": mobilevit_xs,
+    "mobilevit_xxs": mobilevit_xxs,
 }
 
 

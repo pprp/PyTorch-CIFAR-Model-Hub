@@ -2,7 +2,7 @@
 
 ![](utils/logo.png)
 
-调研了CIFAR10数据集上各种trick，数据增强，正则化方法，并进行了实现。目前项目告一段落，如果有更好的想法，或者希望一起维护这个项目可以提issue或者在我的主页找到我的联系方式。
+CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，正则化方法等，并进行了实现。如果有所补充，可以提issue或者进行PR。
 
 ## 0. Requirements
 
@@ -21,22 +21,22 @@
 
 vision Transformer:
 
-| Model              | GPU Mem | Top1 |
-| ------------------ | ------- | ---- |
-| vision_transformer | 2869M   |      |
-| mobilevit_s        | 2009M   |      |
-| mobilevit_xs       | 1681M   |      |
-| mobilevit_xxs      | 1175M   |      |
-| coatnet_0          | 1433M   |      |
-| coatnet_1          | 2089M   |      |
-| coatnet_2          | 2405M   |      |
-| coatnet_3          | 3673M   |      |
-| coatnet_4          | 5451M   |      |
-| cvt                | 2593M   |      |
-| swin_t             | 3927M   |      |
-| swin_s             | 6707M   |      |
-| swin_b             | 8855M   |      |
-| swin_l             | OOM     |      |
+| Model              | GPU Mem | Top1  | RICAP |
+| ------------------ | ------- | ----- | ----- |
+| vision_transformer | 2869M   | 69.02 |       |
+| mobilevit_s        | 2009M   | 92.38 |       |
+| mobilevit_xs       | 1681M   | 91.77 |       |
+| mobilevit_xxs      | 1175M   | 90.17 |       |
+| coatnet_0          | 1433M   |       |       |
+| coatnet_1          | 2089M   |       |       |
+| coatnet_2          | 2405M   |       |       |
+| coatnet_3          | 3673M   |       |       |
+| coatnet_4          | 5451M   | -     |       |
+| cvt                | 2593M   | -     |       |
+| swin_t             | 3927M   |       |       |
+| swin_s             | 6707M   |       |       |
+| swin_b             | 8855M   |       |       |
+| swin_l             | OOM     |       |       |
 
 
 

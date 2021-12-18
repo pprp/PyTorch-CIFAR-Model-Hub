@@ -7,12 +7,13 @@ python train.py --model 'mobilevit_s' --name "mobilevit_s" --sched 'cosine' --ep
 python train.py --model 'mobilevit_xs' --name "mobilevit_xs" --sched 'cosine' --epochs 200 & \
 python train.py --model 'mobilevit_xxs' --name "mobilevit_xxs" --sched 'cosine' --epochs 200
 
-python train.py --model 'coatnet_0' --name "coatnet_0" --sched 'cosine' --epochs 200 & \
-python train.py --model 'coatnet_1' --name "coatnet_1" --sched 'cosine' --epochs 200 & \ 
-python train.py --model 'coatnet_2' --name "coatnet_2" --sched 'cosine' --epochs 200 & \
+python train.py --model 'coatnet_0' --name "coatnet_0" --sched 'cosine' --epochs 200 --lr 0.01  & \
+python train.py --model 'coatnet_1' --name "coatnet_1" --sched 'cosine' --epochs 200 --lr 0.01
 
-python train.py --model 'coatnet_3' --name "coatnet_3" --sched 'cosine' --epochs 200 & \
-python train.py --model 'coatnet_4' --name "coatnet_4" --sched 'cosine' --epochs 200
+python train.py --model 'coatnet_2' --name "coatnet_2" --sched 'cosine' --epochs 200 --lr 0.01 
+
+python train.py --model 'coatnet_3' --name "coatnet_3" --sched 'cosine' --epochs 200 --lr 0.001 & \
+python train.py --model 'coatnet_4' --name "coatnet_4" --sched 'cosine' --epochs 200 --lr 0.001
 
 python train.py --model 'cvt' --name "cvt" --sched 'cosine' --epochs 200 --lr 0.01 & \
 python train.py --model 'swin_t' --name "swin_t" --sched 'cosine' --epochs 200

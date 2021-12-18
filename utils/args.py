@@ -28,7 +28,7 @@ def parse_args():
     ########### DATASET PART #####################
     parser.add_argument(
         "--dataset",
-        default="cifar10",
+        default="cifar100",
         choices=["cifar10", "cifar100"],
         help="dataset name",
     )

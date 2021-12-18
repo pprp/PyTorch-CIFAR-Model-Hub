@@ -210,9 +210,9 @@ class Bottleneck(nn.Module):
         return out
 
 
-class SeResNeXt(nn.Module):
+class CBAMResNeXt(nn.Module):
     def __init__(self, cardinality, depth, num_classes, base_width, expansion=4):
-        super(SeResNeXt, self).__init__()
+        super(CBAMResNeXt, self).__init__()
         self.cardinality = cardinality
         self.depth = depth
         self.block_depth = (self.depth - 2) // 9
@@ -282,8 +282,8 @@ class SeResNeXt(nn.Module):
 
 
 def cbam_resnext29_8x64d(num_classes):
-    return SeResNeXt(cardinality=8, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(cardinality=8, depth=29, num_classes=num_classes, base_width=64)
 
 
 def cbam_resnext29_16x64d(num_classes):
-    return SeResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)

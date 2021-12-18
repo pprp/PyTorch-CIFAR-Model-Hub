@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 from utils.utils import RandomErase
 from .autoaugment import CIFAR10Policy
 from .cutout import Cutout
+import random
 
 
 def build_transforms(name="cifar10", type="train", args=None):
@@ -81,7 +82,7 @@ def build_transforms(name="cifar10", type="train", args=None):
     return transform_type
 
 
-def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=False):
+def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=True):
     assert name in ["cifar10", "cifar100"]
     assert type in ["train", "val"]
 
@@ -127,8 +128,11 @@ def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=F
         total_num = len(dataset_type.targets)
         choice_num = int(total_num * ratio)
         print(f"Choice num/Total num: {choice_num}/{total_num}")
-        dataset_type.data = dataset_type.data[:choice_num]
-        dataset_type.targets = dataset_type.targets[:choice_num]
+        
+        sampled_idx = random.sample(range(total_num), choice_num)
+
+        dataset_type.data = dataset_type.data[sampled_idx]
+        dataset_type.targets = dataset_type.targets[sampled_idx]
     
     print("DATASET:", len(dataset_type))
 

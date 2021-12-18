@@ -261,6 +261,10 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_mr' --mixup True --r
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentation True --random-erase True  --bs 64
 ```
 
+### 3.10 测试注意力机制
+
+
+
 
 
 ## 4. Reference

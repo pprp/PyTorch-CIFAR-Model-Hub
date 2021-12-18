@@ -21,22 +21,22 @@ CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，�
 
 vision Transformer:
 
-| Model              | GPU Mem | Top1  | RICAP |
-| ------------------ | ------- | ----- | ----- |
-| vision_transformer | 2869M   | 69.02 |       |
-| mobilevit_s        | 2009M   | 92.38 |       |
-| mobilevit_xs       | 1681M   | 91.77 |       |
-| mobilevit_xxs      | 1175M   | 90.17 |       |
-| coatnet_0          | 1433M   |       |       |
-| coatnet_1          | 2089M   |       |       |
-| coatnet_2          | 2405M   |       |       |
-| coatnet_3          | 3673M   |       |       |
-| coatnet_4          | 5451M   | -     |       |
-| cvt                | 2593M   | -     |       |
-| swin_t             | 3927M   |       |       |
-| swin_s             | 6707M   |       |       |
-| swin_b             | 8855M   |       |       |
-| swin_l             | OOM     |       |       |
+| Model              | GPU Mem | Top1:train | Top1:val | weight:M | RICAP |
+| ------------------ | ------- | ---------- | -------- | -------- | ----- |
+| vision_transformer | 2869M   | 68.96      | 69.02    | 47.6     |       |
+| mobilevit_s        | 2009M   | 98.83      | 92.50    | 19.2     |       |
+| mobilevit_xs       | 1681M   | 98.22      | 91.77    | 7.78     |       |
+| mobilevit_xxs      | 1175M   | 96.40      | 90.17    | 4.0      |       |
+| coatnet_0          | 1433M   | 99.94      | 90.15    | 64.9     |       |
+| coatnet_1          | 2089M   | 99.97      | 90.09    | 123      |       |
+| coatnet_2          | 2405M   | 99.99      | 90.86    | 208      |       |
+| coatnet_3          | 3673M   |            | -        |          |       |
+| coatnet_4          | 5451M   |            | -        |          |       |
+| cvt                | 2593M   | 94.64      | 84.74    | 75       |       |
+| swin_t             | 3927M   | 93.24      | 86.09    | 104      |       |
+| swin_s             | 6707M   | 90.27      | 83.68    | 184      |       |
+| swin_b             | 8855M   |            |          |          |       |
+| swin_l             | OOM     |            |          |          |       |
 
 
 
@@ -260,6 +260,10 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ma' --mixup True --a
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_mr' --mixup True --random-erase True --bs 64
 python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentation True --random-erase True  --bs 64
 ```
+
+### 3.10 测试注意力机制
+
+
 
 
 

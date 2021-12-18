@@ -10,7 +10,7 @@ from utils.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
 from utils.schd import GradualWarmupScheduler
 from utils.warmup import WarmupMultiStepLR
-from ASAM.asam import SAM, ASAM
+from utils.ASAM.asam import SAM, ASAM
 
 """
 Generate optimizer and scheduler

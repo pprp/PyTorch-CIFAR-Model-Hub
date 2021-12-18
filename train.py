@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from dataset.dataloader import build_dataloader
 from model import build_model
-from utils.controler import (
+from utils.controller import (
     build_criterion,
     build_expname,
     build_optimizer,

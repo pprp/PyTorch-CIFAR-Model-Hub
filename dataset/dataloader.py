@@ -7,7 +7,7 @@ from utils.utils import RandomErase
 from .autoaugment import CIFAR10Policy
 from .cutout import Cutout
 import random
-
+from torch.utils.data import random_split
 
 def build_transforms(name="cifar10", type="train", args=None):
     assert type in ["train", "val"]
@@ -124,15 +124,13 @@ def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=T
 
     if fast:
         # fast train using ratio% images
-        ratio = 0.5
+        ratio = 0.3
         total_num = len(dataset_type.targets)
         choice_num = int(total_num * ratio)
-        print(f"Choice num/Total num: {choice_num}/{total_num}")
-        
-        sampled_idx = random.sample(range(total_num), choice_num)
+        print(f"FAST MODE: Choice num/Total num: {choice_num}/{total_num}")
 
-        dataset_type.data = dataset_type.data[sampled_idx]
-        dataset_type.targets = dataset_type.targets[sampled_idx]
+        dataset_type.data = dataset_type.data[:choice_num]
+        dataset_type.targets = dataset_type.targets[:choice_num]
     
     print("DATASET:", len(dataset_type))
 

@@ -3,8 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 from torch.nn import init
-from .cbam import *
-from .bam import *
+
+# from model.att_overfit.cbam import *
+# from model.att_overfit.bam import *
+from cbam import *
+from bam import *
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -211,7 +214,13 @@ class ResNet(nn.Module):
         return x
 
 
-def ResidualNet(network_type="CIFAR100", depth=18, num_classes=10, att_type="CBAM"):
+def ResidualNet(network_type="CIFAR100", depth=18, num_classes=10, att_type="None"):
+    """
+    w/o attention:
+        att_type=None
+    w   attention:
+        att_type=CBAM or BAM
+    """
 
     assert network_type in [
         "ImageNet",
@@ -231,10 +240,28 @@ def ResidualNet(network_type="CIFAR100", depth=18, num_classes=10, att_type="CBA
 
     elif depth == 101:
         model = ResNet(Bottleneck, [3, 4, 23, 3], network_type, num_classes, att_type)
+
     else:
-        model = ResNet(Bottleneck, [3, 4, depth//-10, 3], network_type, num_classes, att_type)
+        if depth > 34:
+            model = ResNet(
+                Bottleneck,
+                [3, 4, (depth - 32) // 3, 3],
+                network_type,
+                num_classes,
+                att_type,
+            )
+        else:
+            model = ResNet(
+                Bottleneck,
+                [2, 2, (depth - 14) // 2, 2],
+                network_type,
+                num_classes,
+                att_type,
+            )
 
     return model
 
+
 if __name__ == "__main__":
-    m = ResidualNet(depth=18)
+    m = ResidualNet(depth=18, att_type="None")
+    print(m)

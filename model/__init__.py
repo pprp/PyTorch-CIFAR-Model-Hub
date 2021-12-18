@@ -13,6 +13,7 @@ from .stochasticdepth import (
     stochastic_depth_resnet152,
 )
 from .xception import xception
+from .att_overfit.att_netv2 import *
 
 from .attention import *
 from .densenet import *
@@ -110,6 +111,14 @@ __model_factory = {
     "swin_s": swin_s,
     "swin_b": swin_b,
     "swin_l": swin_l,
+    "cbam_resnext29_16x8d": cbam_resnext29_16x8d,
+    "cbam_resnext29_16x16d": cbam_resnext29_16x16d,
+    "cbam_resnext29_16x32d": cbam_resnext29_16x32d,
+    "cbam_resnext29_16x64d": cbam_resnext29_16x64d,
+    "norm_resnext29_16x8d": norm_resnext29_16x8d,
+    "norm_resnext29_16x16d": norm_resnext29_16x16d,
+    "norm_resnext29_16x32d": norm_resnext29_16x32d,
+    "norm_resnext29_16x64d": norm_resnext29_16x64d,
 }
 
 

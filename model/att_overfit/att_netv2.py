@@ -5,7 +5,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from model.att_overfit.cbam import *
+
 # from bam import *
+# from cbam import *
 
 
 class BasicConv(nn.Module):
@@ -125,7 +127,9 @@ class Bottleneck(nn.Module):
 
 
 class CBAMResNeXt(nn.Module):
-    def __init__(self, cardinality, depth, num_classes, base_width, expansion=4):
+    def __init__(
+        self, cardinality, depth, num_classes, base_width, expansion=4, use_att=False
+    ):
         super(CBAMResNeXt, self).__init__()
         self.cardinality = cardinality
         self.depth = depth
@@ -143,9 +147,15 @@ class CBAMResNeXt(nn.Module):
 
         self.conv_1_3x3 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
         self.bn_1 = nn.BatchNorm2d(64)
-        self.stage_1 = self.block("stage_1", self.stages[0], self.stages[1], 1)
-        self.stage_2 = self.block("stage_2", self.stages[1], self.stages[2], 2)
-        self.stage_3 = self.block("stage_3", self.stages[2], self.stages[3], 2)
+        self.stage_1 = self.block(
+            "stage_1", self.stages[0], self.stages[1], 1, use_att=use_att
+        )
+        self.stage_2 = self.block(
+            "stage_2", self.stages[1], self.stages[2], 2, use_att=use_att
+        )
+        self.stage_3 = self.block(
+            "stage_3", self.stages[2], self.stages[3], 2, use_att=use_att
+        )
         self.fc = nn.Linear(self.stages[3], num_classes)
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -154,7 +164,7 @@ class CBAMResNeXt(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def block(self, name, in_channels, out_channels, pool_stride=2):
+    def block(self, name, in_channels, out_channels, pool_stride=2, use_att=False):
         block = nn.Sequential()
         for bottleneck in range(self.block_depth):
             name_ = "%s_bottleneck_%d" % (name, bottleneck)
@@ -168,6 +178,7 @@ class CBAMResNeXt(nn.Module):
                         self.cardinality,
                         self.base_width,
                         self.expansion,
+                        use_att,
                     ),
                 )
             else:
@@ -180,6 +191,7 @@ class CBAMResNeXt(nn.Module):
                         self.cardinality,
                         self.base_width,
                         self.expansion,
+                        use_att,
                     ),
                 )
         return block
@@ -196,43 +208,67 @@ class CBAMResNeXt(nn.Module):
 
 
 def cbam_resnext29_8x64d(num_classes):
-    return CBAMResNeXt(cardinality=8, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(
+        cardinality=8, depth=29, num_classes=num_classes, base_width=64, use_att=True
+    )
 
 
 def cbam_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=True
+    )
 
 
 # New model to test attention
-
-
 def cbam_resnext29_16x8d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=8)
-
-
-def norm_resnext29_16x8d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=8)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=8, use_att=True
+    )
 
 
 def cbam_resnext29_16x16d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=16)
-
-
-def norm_resnext29_16x16d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=16)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=16, use_att=True
+    )
 
 
 def cbam_resnext29_16x32d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=32)
-
-
-def norm_resnext29_16x32d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=32)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=32, use_att=True
+    )
 
 
 def cbam_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=True
+    )
+
+
+def norm_resnext29_16x8d(num_classes):
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=8, use_att=False
+    )
+
+
+def norm_resnext29_16x16d(num_classes):
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=16, use_att=False
+    )
+
+
+def norm_resnext29_16x32d(num_classes):
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=32, use_att=False
+    )
 
 
 def norm_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)
+    return CBAMResNeXt(
+        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=False
+    )
+
+
+if __name__ == "__main__":
+    m = norm_resnext29_16x16d(10)
+    # m = cbam_resnext29_16x8d(10)
+    print(m)

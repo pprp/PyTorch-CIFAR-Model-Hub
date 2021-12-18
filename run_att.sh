@@ -1,18 +1,23 @@
 #!/bin/bash
-# 30% datasets 
+# 10% datasets 
 
-# python train.py --model 'norm_resnext29_16x8d' --name "norm_8d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" & \
-# python train.py --model 'norm_resnext29_16x16d' --name "norm_16d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" 
+module load anaconda/2021.05
+module load  cuda/11.1
+module load cudnn/8.2.1_cuda11.x
+source activate hb
+export PYTHONUNBUFFERED=1
 
-python train.py --model 'norm_resnext29_16x32d' --name "norm_32d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
+python train.py --model 'norm_resnext29_16x8d' --name "norm_8d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" 
 
-python train.py --model 'norm_resnext29_16x64d' --name "norm_64d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
+# python train.py --model 'norm_resnext29_16x32d' --name "norm_32d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" 
 
-python train.py --model 'cbam_resnext29_16x8d' --name "cbam_8d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" & \
-python train.py --model 'cbam_resnext29_16x16d' --name "cbam_16d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
+# python train.py --model 'norm_resnext29_16x64d' --name "norm_64d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
 
-python train.py --model 'cbam_resnext29_16x32d' --name "cbam_32d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" 
-python train.py --model 'cbam_resnext29_16x64d' --name "cbam_64d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
+# python train.py --model 'cbam_resnext29_16x8d' --name "cbam_8d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10" 
+
+# python train.py --model 'cbam_resnext29_16x32d' --name "cbam_32d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
+
+# python train.py --model 'cbam_resnext29_16x64d' --name "cbam_64d" --sched 'cosine' --epochs 200 --fast True --dataset "cifar10"
 
 
 

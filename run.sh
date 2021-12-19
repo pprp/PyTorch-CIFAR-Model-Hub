@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-python train.py --model 'poolformer_s12' --name "poolformer_s12" --sched 'cosine' --epochs 200 --lr 0.01 
+python train.py --model 'cct_2' --name "cct_2" --sched 'cosine' --epochs 200 --lr 0.01 
 
 # python train.py --model 'vision_transformer' --name "vision_transformer" --sched 'cosine' --epochs 200 & \
 # python train.py --model 'mobilevit_s' --name "mobilevit_s" --sched 'cosine' --epochs 200 

@@ -127,8 +127,8 @@ __model_factory = {
     "poolformer_s36": poolformer_s36,
     "convit_tiny": convit_tiny, 
     "convit_small": convit_small,
-    "cct_2": cct_2,
-    "cct_4": cct_4,
+    "cct_2": cct_2_3x2_32,
+    "cct_4": cct_4_3x2_32,
 }
 
 

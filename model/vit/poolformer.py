@@ -5,7 +5,7 @@ import os
 import copy
 import torch
 import torch.nn as nn
-from .utils import trunc_normal_, DropPath
+from .utils.utils import trunc_normal_, DropPath
 
 
 class PatchEmbed(nn.Module):
@@ -17,7 +17,7 @@ class PatchEmbed(nn.Module):
 
     def __init__(
         self,
-        patch_size=16,
+        patch_size=2,
         stride=16,
         padding=0,
         in_chans=3,

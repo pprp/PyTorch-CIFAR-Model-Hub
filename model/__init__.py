@@ -51,6 +51,7 @@ from .vit.cvt import CvT
 from .vit.swin_transformer import *
 from .vit.poolformer import *
 from .vit.cotnet import * 
+from .vit.cct import * 
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -126,6 +127,8 @@ __model_factory = {
     "poolformer_s36": poolformer_s36,
     "convit_tiny": convit_tiny, 
     "convit_small": convit_small,
+    "cct_2": cct_2,
+    "cct_4": cct_4,
 }
 
 

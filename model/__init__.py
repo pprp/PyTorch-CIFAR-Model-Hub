@@ -50,6 +50,7 @@ from .vit.coatnet import *
 from .vit.cvt import CvT
 from .vit.swin_transformer import *
 from .vit.poolformer import *
+from .vit.cotnet import * 
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -122,6 +123,9 @@ __model_factory = {
     "norm_resnext29_16x64d": norm_resnext29_16x64d,
     "poolformer_s12": poolformer_s12,
     "poolformer_s24": poolformer_s24,
+    "poolformer_s36": poolformer_s36,
+    "convit_tiny": convit_tiny, 
+    "convit_small": convit_small,
 }
 
 

@@ -21,7 +21,7 @@ class PatchEmbed(nn.Module):
         stride=2,
         padding=0,
         in_chans=3,
-        embed_dim=768,
+        embed_dim=12,
         norm_layer=None,
     ):
         super().__init__()
@@ -267,7 +267,7 @@ class PoolFormer(nn.Module):
         down_stride=2,
         down_pad=1,
         drop_rate=0.0,
-        drop_path_rate=0.0,
+        drop_path_rate=0.5,
         use_layer_scale=True,
         layer_scale_init_value=1e-5,
         fork_feat=False,

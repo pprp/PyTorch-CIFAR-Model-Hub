@@ -13,7 +13,7 @@ from .stochasticdepth import (
     stochastic_depth_resnet152,
 )
 from .xception import xception
-from .att_overfit.att_netv2 import *
+from .att_overfit.att_net import *
 
 from .attention import *
 from .densenet import *
@@ -50,8 +50,9 @@ from .vit.coatnet import *
 from .vit.cvt import CvT
 from .vit.swin_transformer import *
 from .vit.poolformer import *
-from .vit.cotnet import * 
-from .vit.cct import * 
+from .vit.cotnet import *
+from .vit.cct import *
+from .spp_depth.spp_resnet import *
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -114,21 +115,15 @@ __model_factory = {
     "swin_s": swin_s,
     "swin_b": swin_b,
     "swin_l": swin_l,
-    "cbam_resnext29_16x8d": cbam_resnext29_16x8d,
-    "cbam_resnext29_16x16d": cbam_resnext29_16x16d,
-    "cbam_resnext29_16x32d": cbam_resnext29_16x32d,
-    "cbam_resnext29_16x64d": cbam_resnext29_16x64d,
-    "norm_resnext29_16x8d": norm_resnext29_16x8d,
-    "norm_resnext29_16x16d": norm_resnext29_16x16d,
-    "norm_resnext29_16x32d": norm_resnext29_16x32d,
-    "norm_resnext29_16x64d": norm_resnext29_16x64d,
     "poolformer_s12": poolformer_s12,
     "poolformer_s24": poolformer_s24,
     "poolformer_s36": poolformer_s36,
-    "convit_tiny": convit_tiny, 
+    "convit_tiny": convit_tiny,
     "convit_small": convit_small,
     "cct_2": cct_2_3x2_32,
     "cct_4": cct_4_3x2_32,
+    **spp_family,
+    **att_family,
 }
 
 

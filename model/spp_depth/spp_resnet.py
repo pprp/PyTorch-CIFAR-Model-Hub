@@ -1,56 +1,16 @@
 # -*-coding:utf-8-*-
 
 import torch
+from torch._C import FloatStorageBase
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.att_overfit.cbam import *
+# from model.att_overfit.cbam import *
 
 # from bam import *
 # from cbam import *
-
-
-class BasicConv(nn.Module):
-    def __init__(
-        self,
-        in_planes,
-        out_planes,
-        kernel_size,
-        stride=1,
-        padding=0,
-        dilation=1,
-        groups=1,
-        relu=True,
-        bn=True,
-        bias=False,
-        use_att=False,
-    ):
-        super(BasicConv, self).__init__()
-        self.out_channels = out_planes
-        self.conv = nn.Conv2d(
-            in_planes,
-            out_planes,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=groups,
-            bias=bias,
-        )
-        self.bn = (
-            nn.BatchNorm2d(out_planes, eps=1e-5, momentum=0.01, affine=True)
-            if bn
-            else None
-        )
-        self.relu = nn.ReLU() if relu else None
-
-    def forward(self, x):
-        x = self.conv(x)
-        if self.bn is not None:
-            x = self.bn(x)
-        if self.relu is not None:
-            x = self.relu(x)
-        return x
+from model.spp_depth.poolings import *
+# from poolings import *
 
 
 class Bottleneck(nn.Module):
@@ -63,6 +23,7 @@ class Bottleneck(nn.Module):
         base_width,
         expansion,
         use_att=False,
+        kernel_list=(3, 5, 7),
     ):
 
         super(Bottleneck, self).__init__()
@@ -71,9 +32,9 @@ class Bottleneck(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         if use_att:
-            self.cbam_module = CBAM(out_channels)
+            self.spp_module = SPP(out_channels, out_channels, kernel_list)
         else:
-            self.cbam_module = None
+            self.spp_module = None
         self.conv_reduce = nn.Conv2d(
             in_channels, D, kernel_size=1, stride=1, padding=0, bias=False
         )
@@ -118,19 +79,26 @@ class Bottleneck(nn.Module):
 
         residual = self.shortcut.forward(x)
 
-        if self.cbam_module is not None:
-            out = self.cbam_module(out) + residual
+        if self.spp_module is not None:
+            out = self.spp_module(out) + residual
         else:
             out += residual
         out = self.relu(out)
         return out
 
 
-class CBAMResNeXt(nn.Module):
+class SPPResNeXt(nn.Module):
     def __init__(
-        self, cardinality, depth, num_classes, base_width, expansion=4, use_att=False
+        self,
+        cardinality,
+        depth,
+        num_classes,
+        base_width,
+        expansion=4,
+        use_att=False,
+        kernel_list=[3, 5, 7],
     ):
-        super(CBAMResNeXt, self).__init__()
+        super(SPPResNeXt, self).__init__()
         self.cardinality = cardinality
         self.depth = depth
         self.block_depth = (self.depth - 2) // 9
@@ -138,6 +106,7 @@ class CBAMResNeXt(nn.Module):
         self.expansion = expansion
         self.num_classes = num_classes
         self.output_size = 64
+        self.kernel_list = kernel_list
         self.stages = [
             64,
             64 * self.expansion,
@@ -179,6 +148,7 @@ class CBAMResNeXt(nn.Module):
                         self.base_width,
                         self.expansion,
                         use_att,
+                        self.kernel_list,
                     ),
                 )
             else:
@@ -192,6 +162,7 @@ class CBAMResNeXt(nn.Module):
                         self.base_width,
                         self.expansion,
                         use_att,
+                        self.kernel_list,
                     ),
                 )
         return block
@@ -207,68 +178,144 @@ class CBAMResNeXt(nn.Module):
         return self.fc(x)
 
 
-def cbam_resnext29_8x64d(num_classes):
-    return CBAMResNeXt(
-        cardinality=8, depth=29, num_classes=num_classes, base_width=64, use_att=True
+def build_spp_models(
+    num_classes, depth: int = 11, spp: bool = True, kernel_list: list = [3]
+):
+    """
+    depth: 11 20 29
+    spp: [3] [5] [7] [3,5,7]
+    """
+    return SPPResNeXt(
+        cardinality=16,
+        depth=depth,
+        num_classes=num_classes,
+        base_width=8,
+        use_att=spp,
+        kernel_list=kernel_list,
     )
 
 
-def cbam_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=True
+"""
+N: without spp
+A: [3]
+B: [5]
+C: [7]
+D: [3,5,7]
+"""
+# depth = 11
+def spp_d11_pN(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=11, spp=False, kernel_list=[]
     )
 
 
-# New model to test attention
-def cbam_resnext29_16x8d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=8, use_att=True
+def spp_d11_pA(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=11, spp=False, kernel_list=[3]
     )
 
 
-def cbam_resnext29_16x16d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=16, use_att=True
+def spp_d11_pB(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=11, spp=False, kernel_list=[5]
     )
 
 
-def cbam_resnext29_16x32d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=32, use_att=True
+def spp_d11_pC(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=11, spp=False, kernel_list=[7]
     )
 
 
-def cbam_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=True
+def spp_d11_pD(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=11, spp=False, kernel_list=[3, 5, 7]
     )
 
 
-def norm_resnext29_16x8d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=8, use_att=False
+# depth = 20
+def spp_d20_pN(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=20, spp=False, kernel_list=[]
     )
 
 
-def norm_resnext29_16x16d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=16, use_att=False
+def spp_d20_pA(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=20, spp=False, kernel_list=[3]
     )
 
 
-def norm_resnext29_16x32d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=32, use_att=False
+def spp_d20_pB(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=20, spp=False, kernel_list=[5]
     )
 
 
-def norm_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(
-        cardinality=16, depth=29, num_classes=num_classes, base_width=64, use_att=False
+def spp_d20_pC(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=20, spp=False, kernel_list=[7]
     )
 
+
+def spp_d20_pD(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=20, spp=False, kernel_list=[3, 5, 7]
+    )
+
+
+# depth = 29
+def spp_d29_pN(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=29, spp=False, kernel_list=[]
+    )
+
+
+def spp_d29_pA(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=29, spp=False, kernel_list=[3]
+    )
+
+
+def spp_d29_pB(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=29, spp=False, kernel_list=[5]
+    )
+
+
+def spp_d29_pC(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=29, spp=False, kernel_list=[7]
+    )
+
+
+def spp_d29_pD(num_classes=10):
+    return build_spp_models(
+        num_classes=num_classes, depth=29, spp=False, kernel_list=[3, 5, 7]
+    )
+
+
+spp_family = {
+    "spp_d11_pN": spp_d11_pN,
+    "spp_d11_pA": spp_d11_pA,
+    "spp_d11_pB": spp_d11_pB,
+    "spp_d11_pC": spp_d11_pC,
+    "spp_d11_pD": spp_d11_pD,
+
+    "spp_d20_pN": spp_d20_pN,
+    "spp_d20_pA": spp_d20_pA,
+    "spp_d20_pB": spp_d20_pB,
+    "spp_d20_pC": spp_d20_pC,
+    "spp_d20_pD": spp_d20_pD,
+
+    "spp_d29_pN": spp_d29_pN,
+    "spp_d29_pA": spp_d29_pA,
+    "spp_d29_pB": spp_d29_pB,
+    "spp_d29_pC": spp_d29_pC,
+    "spp_d29_pD": spp_d29_pD,
+}
 
 if __name__ == "__main__":
-    m = norm_resnext29_16x16d(10)
-    # m = cbam_resnext29_16x8d(10)
+    # m = norm_resnext29_16x8d(10)
+    m = spp_d11_pN(10)
     print(m)

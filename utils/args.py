@@ -62,7 +62,7 @@ def parse_args():
         help="select criterion",
     )
     parser.add_argument("--milestones", default="60,120,160", type=str)
-    parser.add_argument("--gamma", default=0.2, type=float)
+    parser.add_argument("--gamma", default=0.5, type=float)
     parser.add_argument("--momentum", default=0.9, type=float)
     parser.add_argument("--weight-decay", default=5e-4, type=float)
     parser.add_argument("--nesterov", default=False, type=str2bool)

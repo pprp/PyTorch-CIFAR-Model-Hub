@@ -1,6 +1,11 @@
 #!/bin/bash
 
-python train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 30 --cutout True --sched "cosine" --milestones 20,30,40 --lr 0.4 --bs 512
+# python -m torch.utils.bottleneck train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 1 --cutout True --sched "cosine" --lr 0.6 --bs 512 --nw 0 --fast True 
+
+
+python train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 30 --cutout True --sched "cosine" --lr 0.4 --bs 512 --nw 8 --fast True 
+
+# gprof2dot -f pstats profile.prof | dot -Tpng -o out.png
 
 
 

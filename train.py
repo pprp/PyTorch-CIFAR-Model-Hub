@@ -158,6 +158,7 @@ def train(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        
 
         losses.update(loss.item(), input.size(0))
         scores.update(acc.item(), input.size(0))

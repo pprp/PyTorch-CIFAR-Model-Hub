@@ -8,14 +8,14 @@ from torch.utils.data.dataset import random_split
 
 from utils.optims.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
-from utils.schd import GradualWarmupScheduler
-from utils.warmup import WarmupMultiStepLR
+from utils.schdulers import GradualWarmupScheduler, WarmupMultiStepLR
 from utils.optims.asam import SAM, ASAM
 from utils.optims.adamw import AdamW
 
 """
 Generate optimizer and scheduler
 """
+
 
 def build_optimizer(model, args):
     if args.optims == "sgd":
@@ -29,13 +29,13 @@ def build_optimizer(model, args):
         optimizer = optim.Adam(
             filter(lambda p: p.requires_grad, model.parameters()),
             lr=args.lr,
-            betas=(0.9, 0.999)
+            betas=(0.9, 0.999),
         )
     elif args.optims == "adamw":
-        optimizer = optim.AdamW(
+        optimizer = AdamW(
             filter(lambda p: p.requires_grad, model.parameters()),
             lr=args.lr,
-            betas=(0.9, 0.999)
+            betas=(0.9, 0.999),
         )
     elif args.optims == "nesterov":
         optimizer = optim.SGD(
@@ -92,7 +92,10 @@ def build_scheduler(args, optimizer):
 
     if args.sched == "warmup":
         scheduler = WarmupMultiStepLR(
-            optimizer=optimizer, milestones=[int(e) for e in args.milestones.split(",")]
+            optimizer=optimizer,
+            milestones=[int(e) for e in args.milestones.split(",")],
+            gamma=0.5,
+            warmup_epochs=int(args.epochs * 0.1),
         )
     elif args.sched == "multistep":
         scheduler = lr_scheduler.MultiStepLR(
@@ -108,8 +111,8 @@ def build_scheduler(args, optimizer):
         # cifar slow / total = 20 / 300
         tmp_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
         scheduler = GradualWarmupScheduler(
-            optimizer, 1, total_epoch=20, after_scheduler=tmp_scheduler
-        )
+            optimizer, 1, total_epoch=args.epochs * 0.1, after_scheduler=tmp_scheduler
+        )        
     else:
         raise "Not Implemented."
 

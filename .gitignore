@@ -3,3 +3,6 @@ events*
 models/*
 exps/*
 data/*
+*.png
+*.prof
+*.json

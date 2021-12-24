@@ -6,16 +6,16 @@ import torch.optim as optim
 from torch.optim import lr_scheduler, optimizer
 from torch.utils.data.dataset import random_split
 
-from utils.adabound import AdaBound, AdaBoundW
+from utils.optims.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
 from utils.schd import GradualWarmupScheduler
 from utils.warmup import WarmupMultiStepLR
-from utils.ASAM.asam import SAM, ASAM
+from utils.optims.asam import SAM, ASAM
+from utils.optims.adamw import AdamW
 
 """
 Generate optimizer and scheduler
 """
-
 
 def build_optimizer(model, args):
     if args.optims == "sgd":
@@ -24,6 +24,18 @@ def build_optimizer(model, args):
             lr=args.lr,
             momentum=args.momentum,
             weight_decay=args.weight_decay,
+        )
+    elif args.optims == "adam":
+        optimizer = optim.Adam(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=args.lr,
+            betas=(0.9, 0.999)
+        )
+    elif args.optims == "adamw":
+        optimizer = optim.AdamW(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=args.lr,
+            betas=(0.9, 0.999)
         )
     elif args.optims == "nesterov":
         optimizer = optim.SGD(

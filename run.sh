@@ -1,7 +1,10 @@
 #!/bin/bash
 
+python train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 30 --cutout True --sched "cosine" --milestones 20,30,40 --lr 0.4 --bs 512
 
-python train.py --model 'poolformer_s12' --name "poolformer_s12_dim128" --sched 'cosine' --epochs 200 --lr 0.01 
+
+
+# python train.py --model 'poolformer_s12' --name "poolformer_s12_dim128" --sched 'cosine' --epochs 200 --lr 0.01 
 
 # python train.py --model 'vision_transformer' --name "vision_transformer" --sched 'cosine' --epochs 200 & \
 # python train.py --model 'mobilevit_s' --name "mobilevit_s" --sched 'cosine' --epochs 200 

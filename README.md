@@ -265,17 +265,17 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentati
 | spp_d11_pA | 100        | 85.83    | 7.36     |
 | spp_d11_pB | 100        | 85.66    | 7.36     |
 | spp_d11_pC | 100        | 85.56    | 7.36     |
-| spp_d11_pD |            |          | 7.36     |
+| spp_d11_pD | 100        | 85.73    | 7.36     |
 | spp_d20_pN | 100        | 90.59    | 13.4     |
 | spp_d20_pA | 100        | 89.96    | 13.4     |
 | spp_d20_pB | 100        | 89.26    | 13.4     |
 | spp_d20_pC | 100        | 89.69    | 13.4     |
-| spp_d20_pD |            |          | 13.4     |
+| spp_d20_pD | 100        | 89.93    | 13.4     |
 | spp_d29_pN | 99.99      | 89.56    | 19.4     |
 | spp_d29_pA | 100        | 90.13    | 19.4     |
 | spp_d29_pB | 100        | 90.16    | 19.4     |
 | spp_d29_pC | 100        | 90.09    | 19.4     |
-| spp_d29_pD |            |          | 19.4     |
+| spp_d29_pD | 100        | 90.06    | 19.4     |
 
 
 
@@ -294,3 +294,5 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentati
 [6] https://github.com/facebookresearch/LaMCTS
 
 [7] https://github.com/Alibaba-MIIL/ImageNet21K
+
+[8] https://myrtle.ai/learn/how-to-train-your-resnet/

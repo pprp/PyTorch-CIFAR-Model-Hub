@@ -1,58 +1,56 @@
 from __future__ import absolute_import
 
-from .cbam_resnext import cbam_resnext29_8x64d, cbam_resnext29_16x64d
-from .genet import ge_resnext29_8x64d, ge_resnext29_16x64d
-from .shake_shake import shake_resnet26_2x32d, shake_resnet26_2x64d
-from .sknet import sk_resnext29_16x32d, sk_resnext29_16x64d
-from .squeezenet import squeezenet
-from .stochasticdepth import (
-    stochastic_depth_resnet18,
-    stochastic_depth_resnet34,
-    stochastic_depth_resnet50,
-    stochastic_depth_resnet101,
-    stochastic_depth_resnet152,
-)
-from .xception import xception
 from .att_overfit.att_net import *
-
-from .attention import *
-from .densenet import *
-from .dla import *
-from .dpn import DPN26
-from .efficientnetb0 import *
-from .googlenet import *
-from .inceptionv3 import *
-from .inceptionv4 import *
-from .lenet import *
-from .mobilenet import *
-from .mobilenetv2 import *
-from .nasnet import *
-from .pnasnet import *
-from .preact_resnet import *
-from .regnet import *
-from .resnet import *
-from .resnet20 import *
-from .resnext import *
-from .rir import *
+from .cnn.attention import *
+from .cnn.cbam_resnext import cbam_resnext29_8x64d, cbam_resnext29_16x64d
+from .cnn.densenet import *
+from .cnn.dla import *
+from .cnn.dpn import DPN26
+from .cnn.googlenet import *
+from .cnn.squeezenet import squeezenet
+from .cnn.stochasticdepth import *
+from .cnn.stochasticdepth import (stochastic_depth_resnet18,
+                                  stochastic_depth_resnet34,
+                                  stochastic_depth_resnet50,
+                                  stochastic_depth_resnet101,
+                                  stochastic_depth_resnet152)
+from .cnn.vgg import *
+from .cnn.wide_resnet import WideResNet
+from .cnn.xception import *
+from .cnn.xception import xception
+from .dawnnet import resnet_dawn
+from .cnn.efficientnetb0 import *
+from .cnn.genet import ge_resnext29_8x64d, ge_resnext29_16x64d
+from .cnn.inceptionv3 import *
+from .cnn.inceptionv4 import *
+from .cnn.lenet import *
+from .cnn.mobilenet import *
+from .cnn.mobilenetv2 import *
+from .cnn.nasnet import *
+from .cnn.pnasnet import *
+from .cnn.preact_resnet import *
+from .cnn.pyramidnet import pyramidnet164, pyramidnet272
+from .cnn.regnet import *
+from .cnn.resnet import *
+from .cnn.resnet20 import *
+from .cnn.resnext import *
+from .cnn.rir import *
 from .sample_resnet20 import *
-from .senet import *
-from .shufflenet import *
-from .shufflenetv2 import *
-from .stochasticdepth import *
-from .vgg import *
-from .xception import *
-from .toymodel import ToyNet
-from .wide_resnet import WideResNet
-from .pyramidnet import pyramidnet164, pyramidnet272
-from .vit.vision_transformer import ViT
-from .vit.mobile_vit import *
-from .vit.coatnet import *
-from .vit.cvt import CvT
-from .vit.swin_transformer import *
-from .vit.poolformer import *
-from .vit.cotnet import *
-from .vit.cct import *
+from .cnn.senet import *
+from .cnn.shake_shake import shake_resnet26_2x32d, shake_resnet26_2x64d
+from .cnn.shufflenet import *
+from .cnn.shufflenetv2 import *
+from .cnn.sknet import sk_resnext29_16x32d, sk_resnext29_16x64d
 from .spp_depth.spp_resnet import *
+from .toymodel import ToyNet
+from .vit.cct import *
+from .vit.coatnet import *
+from .vit.cotnet import *
+from .vit.cvt import CvT
+from .vit.mobile_vit import *
+from .vit.poolformer import *
+from .vit.swin_transformer import *
+from .vit.vision_transformer import ViT
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -122,6 +120,7 @@ __model_factory = {
     "convit_small": convit_small,
     "cct_2": cct_2_3x2_32,
     "cct_4": cct_4_3x2_32,
+    "dawnnet": resnet_dawn,
     **spp_family,
     **att_family,
 }

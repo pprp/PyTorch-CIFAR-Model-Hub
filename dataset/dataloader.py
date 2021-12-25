@@ -1,13 +1,81 @@
-from functools import total_ordering
+import random
+from functools import lru_cache, total_ordering, partial
 from operator import pos
-from torch.utils.data import DataLoader
+
+import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader, random_split
 from utils.utils import RandomErase
+
 from .autoaugment import CIFAR10Policy
 from .cutout import Cutout
-import random
-from torch.utils.data import random_split
+from utils.misc import *
+
+# equals np.mean(cifar10()['train']['data'], axis=(0,1,2))
+# equals np.std(cifar10()['train']['data'], axis=(0,1,2))
+cifar10_mean, cifar10_std = [
+    (125.31, 122.95, 113.87),
+    (62.99, 62.09, 66.70),
+]
+
+custom_transformers = [
+    partial(
+        normalise,
+        mean=np.array(cifar10_mean, dtype=np.float32),
+        std=np.array(cifar10_std, dtype=np.float32),
+    ),
+    partial(transpose, source="NHWC", target="NCHW"),
+]
+
+
+@lru_cache(None)
+def cifar10(root="~/data"):
+    download = lambda train: datasets.CIFAR10(root=root, train=train, download=True)
+    return {
+        k: {"data": v.data, "targets": v.targets}
+        for k, v in [
+            ("train", download(train=True)),
+            ("valid", download(train=False)),
+        ]
+    }
+
+
+class CustomDataloader:
+    def __init__(
+        self,
+        dataset,
+        batch_size,
+        shuffle,
+        set_random_choices=False,
+        num_workers=0,
+        drop_last=False,
+    ):
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.set_random_choices = set_random_choices
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        self.dataloader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            pin_memory=True,
+            shuffle=shuffle,
+            drop_last=drop_last,
+        )
+
+    def __iter__(self):
+        if self.set_random_choices:
+            self.dataset.set_random_choices()
+        return (
+            {"input": x.to(self.device).half(), "target": y.to(self.device).long()}
+            for (x, y) in self.dataloader
+        )# generater
+
+    def __len__(self):
+        return len(self.dataloader)
+
 
 def build_transforms(name="cifar10", type="train", args=None):
     assert type in ["train", "val"]
@@ -50,9 +118,9 @@ def build_transforms(name="cifar10", type="train", args=None):
                     [0.5071, 0.4865, 0.4409], [0.1942, 0.1918, 0.1958]
                 ),
             ]
-        
+
         if args.cutout:
-            post_transform.append(Cutout(1,8))
+            post_transform.append(Cutout(1, 8))
 
         transform_type = transforms.Compose(
             [*base_transform, *mid_transform, *post_transform]
@@ -131,7 +199,7 @@ def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=T
 
         dataset_type.data = dataset_type.data[:choice_num]
         dataset_type.targets = dataset_type.targets[:choice_num]
-    
+
     print("DATASET:", len(dataset_type))
 
     return dataset_type
@@ -163,7 +231,9 @@ def build_dataloader(name="cifar10", type="train", args=None):
         num_classes = 100
         if type == "train":
             dataloader_type = DataLoader(
-                build_dataset("train", "cifar100", args.root, args=args, fast=args.fast),
+                build_dataset(
+                    "train", "cifar100", args.root, args=args, fast=args.fast
+                ),
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,

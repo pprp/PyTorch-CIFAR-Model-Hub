@@ -23,6 +23,7 @@ from utils.controller import (
 from utils.utils import *
 from utils.args import parse_args
 
+HALF_FLAG = True
 
 def train(
     args, train_loader, model, criterion, optimizer, epoch, scheduler=None, writer=None
@@ -31,6 +32,8 @@ def train(
     scores = AverageMeter()
 
     model.train()
+    if HALF_FLAG:
+        model = model.half()
 
     train_tqdm = tqdm(train_loader, total=len(train_loader))
     train_tqdm.set_description(
@@ -38,6 +41,7 @@ def train(
         % ("Epoch:", epoch + 1, args.epochs, "lr:", scheduler.get_last_lr()[0])
     )
     for i, (input, target) in enumerate(train_tqdm):
+        # convert into half 
         # from original paper's appendix
         if args.ricap:
             I_x, I_y = input.size()[2:]
@@ -132,7 +136,10 @@ def train(
 
             acc = accuracy(output, target)[0]
         else:
-            input = input.cuda()
+            if HALF_FLAG:
+                input = input.cuda().half()
+            else:
+                input = input.cuda()
             target = target.cuda()
 
             output = model(input)
@@ -185,7 +192,10 @@ def validate(args, val_loader, model, criterion, epoch, writer):
 
     with torch.no_grad():
         for i, (input, target) in tqdm(enumerate(val_loader), total=len(val_loader)):
-            input = input.cuda()
+            if HALF_FLAG:
+                input = input.cuda().half()
+            else:
+                input = input.cuda()
             target = target.cuda()
 
             output = model(input)

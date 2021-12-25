@@ -8,7 +8,7 @@ from torch.utils.data.dataset import random_split
 
 from utils.optims.adabound import AdaBound, AdaBoundW
 from utils.labelsmoothing import LSR
-from utils.schdulers import GradualWarmupScheduler, WarmupMultiStepLR
+from utils.schdulers import GradualWarmupScheduler, WarmupMultiStepLR, CyclicLR
 from utils.optims.asam import SAM, ASAM
 from utils.optims.adamw import AdamW
 
@@ -112,7 +112,18 @@ def build_scheduler(args, optimizer):
         tmp_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
         scheduler = GradualWarmupScheduler(
             optimizer, 1, total_epoch=args.epochs * 0.1, after_scheduler=tmp_scheduler
-        )        
+        )
+    elif args.sched == "custom":
+        # tmp_scheduler = lr_scheduler.LambdaLR(
+        #     optimizer, lambda step: (1.0 - step / args.epochs), last_epoch=-1
+        # )
+        # scheduler = GradualWarmupScheduler(
+        #     optimizer,
+        #     1,
+        #     total_epoch=int(args.epochs * 0.5),
+        #     after_scheduler=tmp_scheduler,
+        # )
+        scheduler = CyclicLR(optimizer, base_lr=0, max_lr=args.lr, step_size_up=15, step_size_down=args.epochs - 15)
     else:
         raise "Not Implemented."
 

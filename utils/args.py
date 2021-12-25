@@ -52,7 +52,7 @@ def parse_args():
     parser.add_argument(
         "--sched",
         default="multistep",
-        choices=["warmup", "multistep", "cosine", "warmcosine"],
+        choices=["warmup", "multistep", "cosine", "warmcosine", "custom"],
         help="select scheduler",
     )
     parser.add_argument(

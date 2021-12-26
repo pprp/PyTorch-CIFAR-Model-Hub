@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument(
         "--optims",
         default="sgd",
-        choices=["sgd", "adabound", "adaboundw", "nesterov", "sam", "asam"],
+        choices=["sgd", "adam", "adabound", "adaboundw", "nesterov", "sam", "asam"],
         help="optimizer name support sgd, adabound",
     )
     parser.add_argument(
@@ -67,6 +67,9 @@ def parse_args():
     parser.add_argument("--weight-decay", default=5e-4, type=float)
     parser.add_argument("--nesterov", default=False, type=str2bool)
     parser.add_argument("--amp", type=str2bool, default=False)
+    parser.add_argument(
+        "--gradient_clip", default=2.0, type=float, help="gradient clip parameter"
+    )
     ############# AUGMENTATION ####################
     # AUGMENTATION: ricap
     parser.add_argument("--ricap", default=False, type=str2bool, help="use RICAP")
@@ -87,7 +90,6 @@ def parse_args():
     )
 
     # AUGMENTATION: RandAugmentation
-    
 
     # AUGMENTATION: cutout
     parser.add_argument("--cutout", default=False, type=str2bool, help="use cutout")

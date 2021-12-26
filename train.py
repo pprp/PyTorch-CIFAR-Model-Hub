@@ -25,6 +25,7 @@ from utils.args import parse_args
 
 HALF_FLAG = True
 
+
 def train(
     args, train_loader, model, criterion, optimizer, epoch, scheduler=None, writer=None
 ):
@@ -41,7 +42,7 @@ def train(
         % ("Epoch:", epoch + 1, args.epochs, "lr:", scheduler.get_last_lr()[0])
     )
     for i, (input, target) in enumerate(train_tqdm):
-        # convert into half 
+        # convert into half
         # from original paper's appendix
         if args.ricap:
             I_x, I_y = input.size()[2:]
@@ -160,12 +161,15 @@ def train(
         elif args.optims in ["sam", "asam"]:
             loss = criterion(model(input), target)
             loss.backward()
+            if args.gradient_clip > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
             optimizer.descent_step()
         else:
             optimizer.zero_grad()
             loss.backward()
+            if args.gradient_clip > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
             optimizer.step()
-        
 
         losses.update(loss.item(), input.size(0))
         scores.update(acc.item(), input.size(0))

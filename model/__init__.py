@@ -51,6 +51,7 @@ from .vit.mobile_vit import *
 from .vit.poolformer import *
 from .vit.swin_transformer import *
 from .vit.vision_transformer import ViT
+from .vit.botnet import BoTNet_ResNet50
 
 __model_factory = {
     "wideresnet": WideResNet,
@@ -121,6 +122,7 @@ __model_factory = {
     "cct_2": cct_2_3x2_32,
     "cct_4": cct_4_3x2_32,
     "dawnnet": resnet_dawn,
+    "botnet": BoTNet_ResNet50,
     **spp_family,
     **att_family,
 }

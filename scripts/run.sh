@@ -3,7 +3,7 @@
 # python -m torch.utils.bottleneck train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 1 --cutout True --sched "cosine" --lr 0.6 --bs 512 --nw 0 --fast True 
 
 
-python train.py --model 'dawnnet' --name "fast_training" --sched 'custom' --epochs 35 --cutout False --lr 0.35 --bs 512 --nw 4
+python train.py --model 'botnet' --name "botnet" --sched 'warmcosine' --epochs 100 --cutout True --lr 0.01 --bs 128 --nw 4 --optims "sgd" --weight-decay 1e-4 --gradient_clip 0.5
 
 # gprof2dot -f pstats profile.prof | dot -Tpng -o out.png
 

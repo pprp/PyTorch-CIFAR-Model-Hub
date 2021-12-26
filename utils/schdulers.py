@@ -195,7 +195,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     initial_lr = 0.1
-    total_epoch = 35
+    total_epoch = 100
     net = model()
 
     optimizer = torch.optim.SGD(net.parameters(), lr=initial_lr)
@@ -212,7 +212,8 @@ if __name__ == "__main__":
     #     optimizer, 1, total_epoch=5, after_scheduler=a_scheduler
     # )
     # scheduler = WarmupMultiStepLR(optimizer, [100,150], gamma=0.5)
-    scheduler = CyclicLR(optimizer, base_lr=0, max_lr=0.1, step_size_up=15, step_size_down=20)
+    # scheduler = CyclicLR(optimizer, base_lr=0, max_lr=0.1, step_size_up=15, step_size_down=20)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=0.0001)
     # scheduler = LambdaLR(optimizer, lambda step : (1.0-step/total_epoch) if step > 15 else (step/total_epoch), last_epoch=-1)
     # scheduler = GradualWarmupScheduler(
     #     optimizer, 1, total_epoch=15, after_scheduler=a_scheduler

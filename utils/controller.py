@@ -109,10 +109,11 @@ def build_scheduler(args, optimizer):
         )
     elif args.sched == "warmcosine":
         # cifar slow / total = 20 / 300
-        tmp_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-        scheduler = GradualWarmupScheduler(
-            optimizer, 1, total_epoch=args.epochs * 0.1, after_scheduler=tmp_scheduler
-        )
+        # tmp_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+        # scheduler = GradualWarmupScheduler(
+        #     optimizer, 1, total_epoch=args.epochs * 0.1, after_scheduler=tmp_scheduler
+        # )
+        scheduler = lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=0.0001)
     elif args.sched == "custom":
         # tmp_scheduler = lr_scheduler.LambdaLR(
         #     optimizer, lambda step: (1.0 - step / args.epochs), last_epoch=-1

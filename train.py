@@ -23,7 +23,7 @@ from utils.controller import (
 from utils.utils import *
 from utils.args import parse_args
 
-HALF_FLAG = True
+HALF_FLAG = False
 
 
 def train(
@@ -83,7 +83,6 @@ def train(
                 loss = sum([W_[k] * criterion(output, c_[k]) for k in range(4)])
 
             acc = sum([W_[k] * accuracy(output, c_[k])[0] for k in range(4)])
-
         elif args.mixup:
             l = np.random.beta(args.mixup_alpha, args.mixup_alpha)
 
@@ -126,7 +125,6 @@ def train(
             )
 
             acc = accuracy(output, target)[0]
-
         elif args.optims in ["sam", "asam"]:
             input = input.cuda()
             target = target.cuda()
@@ -134,7 +132,6 @@ def train(
             loss = criterion(output, target)
             loss.backward()
             optimizer.ascent_step()
-
             acc = accuracy(output, target)[0]
         else:
             if HALF_FLAG:
@@ -142,14 +139,14 @@ def train(
             else:
                 input = input.cuda()
             target = target.cuda()
-
             output = model(input)
-
             loss = criterion(output, target)
+            acc, _ = accuracy(output, target, topk=(1, 5))
 
-            acc = accuracy(output, target)[0]
-
-        postfix = {"train_loss": "%.3f" % (loss.item()), "train_acc": "%.3f" % acc}
+        postfix = {
+            "train_loss": "%.3f" % (loss.item()),
+            "train_acc": "%.3f" % acc.item(),
+        }
 
         train_tqdm.set_postfix(log=postfix)
         # compute gradient and do optimizing step
@@ -205,7 +202,7 @@ def validate(args, val_loader, model, criterion, epoch, writer):
             output = model(input)
             loss = criterion(output, target)
 
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            acc1, _ = accuracy(output, target, topk=(1, 5))
 
             losses.update(loss.item(), input.size(0))
             scores.update(acc1.item(), input.size(0))

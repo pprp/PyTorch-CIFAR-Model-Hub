@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from dataset.dataloader import build_dataloader
+from dataset.loader import build_dataloader
 from model import build_model
 from utils.utils import *
 from utils.findlr import FindLR

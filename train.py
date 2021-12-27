@@ -1,5 +1,7 @@
 import argparse
+import logging
 import os
+import sys
 import time
 from collections import OrderedDict
 
@@ -12,16 +14,17 @@ from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from dataset.dataloader import build_dataloader
+from dataset.loader import build_dataloader
 from model import build_model
+from utils.args import parse_args
 from utils.controller import (
     build_criterion,
     build_expname,
     build_optimizer,
     build_scheduler,
 )
+from utils.misc import Timer
 from utils.utils import *
-from utils.args import parse_args
 
 HALF_FLAG = False
 
@@ -36,13 +39,7 @@ def train(
     if HALF_FLAG:
         model = model.half()
 
-    train_tqdm = tqdm(train_loader, total=len(train_loader))
-    train_tqdm.set_description(
-        "[%s%03d/%03d %s%f]"
-        % ("Epoch:", epoch + 1, args.epochs, "lr:", scheduler.get_last_lr()[0])
-    )
-    for i, (input, target) in enumerate(train_tqdm):
-        # convert into half
+    for i, (input, target) in enumerate(train_loader):
         # from original paper's appendix
         if args.ricap:
             I_x, I_y = input.size()[2:]
@@ -134,21 +131,17 @@ def train(
             optimizer.ascent_step()
             acc = accuracy(output, target)[0]
         else:
+            # logging.info("train.py line 134")
             if HALF_FLAG:
                 input = input.cuda().half()
             else:
                 input = input.cuda()
             target = target.cuda()
+            optimizer.zero_grad()
             output = model(input)
             loss = criterion(output, target)
             acc, _ = accuracy(output, target, topk=(1, 5))
 
-        postfix = {
-            "train_loss": "%.3f" % (loss.item()),
-            "train_acc": "%.3f" % acc.item(),
-        }
-
-        train_tqdm.set_postfix(log=postfix)
         # compute gradient and do optimizing step
         if args.amp:
             optimizer.zero_grad()
@@ -162,7 +155,7 @@ def train(
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
             optimizer.descent_step()
         else:
-            optimizer.zero_grad()
+            # optimizer.zero_grad()
             loss.backward()
             if args.gradient_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
@@ -192,7 +185,7 @@ def validate(args, val_loader, model, criterion, epoch, writer):
     model.eval()
 
     with torch.no_grad():
-        for i, (input, target) in tqdm(enumerate(val_loader), total=len(val_loader)):
+        for i, (input, target) in enumerate(val_loader):
             if HALF_FLAG:
                 input = input.cuda().half()
             else:
@@ -222,9 +215,9 @@ def validate(args, val_loader, model, criterion, epoch, writer):
 
 
 def main():
-    args = parse_args()
+    cudnn.benchmark = True
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    args = parse_args()
 
     # process argparse & yaml
     if not args.config:
@@ -256,17 +249,27 @@ def main():
         for arg in vars(args):
             print("%s: %s" % (arg, getattr(args, arg)), file=f)
 
-    criterion = build_criterion(args).cuda()
+    log_format = "%(asctime)s %(message)s"
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.INFO,
+        format=log_format,
+        datefmt="%m/%d %I:%M:%S %p",
+    )
 
-    cudnn.benchmark = True
+    fh = logging.FileHandler(os.path.join("exps", args.name, "log.txt"))
+    fh.setFormatter(logging.Formatter(log_format))
+    logging.getLogger().addHandler(fh)
+    logging.info(args)
 
-    # data loading code
-    train_loader, num_classes = build_dataloader(args.dataset, type="train", args=args)
-    test_loader, num_classes = build_dataloader(args.dataset, type="val", args=args)
+    #######################################################################
+
+    train_loader = build_dataloader(args.dataset, type="train", args=args)
+    test_loader = build_dataloader(args.dataset, type="val", args=args)
 
     # create model
-    model = build_model(args.model, num_classes)
-    print(count_params(model))
+    model = build_model(args.model, num_classes=10)
+    logging.info(f"param of model {args.model} is {count_params(model)}")
 
     # stat(model, (3, 32, 32))
     # from torchsummary import summary
@@ -274,6 +277,7 @@ def main():
 
     model = model.cuda()
 
+    criterion = build_criterion(args).cuda()
     optimizer = build_optimizer(model, args)
     scheduler = build_scheduler(args, optimizer)
 
@@ -281,10 +285,13 @@ def main():
         index=[], columns=["epoch", "lr", "loss", "acc", "val_loss", "val_acc"]
     )
 
+    logging.info("Training Start...")
+
+    timer = Timer()
+
     best_acc = 0
     for epoch in range(args.epochs):
-        print("Epoch [%d/%d]" % (epoch + 1, args.epochs))
-
+        logging.info("Epoch [%03d/%03d]" % (epoch + 1, args.epochs))
         # train for one epoch
         train_log = train(
             args,
@@ -296,20 +303,22 @@ def main():
             scheduler=scheduler,
             writer=writer,
         )
+
+        train_time = timer()
+
         # evaluate on validation set
         val_log = validate(args, test_loader, model, criterion, epoch, writer=writer)
 
         scheduler.step()
 
-        print(
-            "loss %.4f - acc %.4f - val_loss %.4f - val_acc %.4f"
-            % (train_log["loss"], train_log["acc"], val_log["loss"], val_log["acc"])
+        logging.info(
+            f"Epoch:[{epoch:03d}/{args.epochs:03d}] lr:{scheduler.get_last_lr()[0]:.4f} train_acc:{train_log['acc']/100.:.3f} train_loss:{train_log['loss']:.4f} train_time:{train_time:03.2f} valid_acc:{val_log['acc']/100.:.3f} valid_loss:{val_log['loss']:.4f} valid_time:{timer():03.2f} total_time: {timer()+train_time:.2f}"
         )
 
         tmp = pd.Series(
             [
                 epoch,
-                scheduler.get_lr()[0],
+                scheduler.get_last_lr()[0],
                 train_log["loss"],
                 train_log["acc"],
                 val_log["loss"],
@@ -327,7 +336,6 @@ def main():
                 "exps/%s/model_%d.pth" % (args.name, (val_log["acc"] * 100)),
             )
             best_acc = val_log["acc"]
-            print("=> saved best model")
 
 
 if __name__ == "__main__":

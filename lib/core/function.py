@@ -6,218 +6,189 @@ import logging
 import time
 import torch
 
-from timm.data import Mixup
 from torch.cuda.amp import autocast
+import numpy as np
+from lib.utils.utils import *
+from collections import OrderedDict
 
 from core.evaluate import accuracy
-from utils.comm import comm
 
 
-def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
-                    output_dir, tb_log_dir, writer_dict, scaler=None):
-    batch_time = AverageMeter()
-    data_time = AverageMeter()
+def train_one_epoch(
+    args, train_loader, model, criterion, optimizer, epoch, scheduler=None, writer=None
+):
     losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
+    scores = AverageMeter()
 
-    logging.info('=> switch to train mode')
     model.train()
+    if args.half:
+        model = model.half()
 
-    aug = config.AUG
-    mixup_fn = Mixup(
-        mixup_alpha=aug.MIXUP, cutmix_alpha=aug.MIXCUT,
-        cutmix_minmax=aug.MIXCUT_MINMAX if aug.MIXCUT_MINMAX else None,
-        prob=aug.MIXUP_PROB, switch_prob=aug.MIXUP_SWITCH_PROB,
-        mode=aug.MIXUP_MODE, label_smoothing=config.LOSS.LABEL_SMOOTHING,
-        num_classes=config.MODEL.NUM_CLASSES
-    ) if aug.MIXUP_PROB > 0.0 else None
-    end = time.time()
-    for i, (x, y) in enumerate(train_loader):
-        # measure data loading time
-        data_time.update(time.time() - end)
-
-        # compute output
-        x = x.cuda(non_blocking=True)
-        y = y.cuda(non_blocking=True)
-
-        if mixup_fn:
-            x, y = mixup_fn(x, y)
-
-        with autocast(enabled=config.AMP.ENABLED):
-            if config.AMP.ENABLED and config.AMP.MEMORY_FORMAT == 'nwhc':
-                x = x.contiguous(memory_format=torch.channels_last)
-                y = y.contiguous(memory_format=torch.channels_last)
-
-            outputs = model(x)
-            loss = criterion(outputs, y)
-
-        # compute gradient and do update step
+    for i, (input, target) in enumerate(train_loader):
         optimizer.zero_grad()
-        is_second_order = hasattr(optimizer, 'is_second_order') \
-            and optimizer.is_second_order
 
-        scaler.scale(loss).backward(create_graph=is_second_order)
+        if args.ricap:
+            I_x, I_y = input.size()[2:]
 
-        if config.TRAIN.CLIP_GRAD_NORM > 0.0:
-            # Unscales the gradients of optimizer's assigned params in-place
-            scaler.unscale_(optimizer)
+            w = int(np.round(I_x * np.random.beta(args.ricap_beta, args.ricap_beta)))
+            h = int(np.round(I_y * np.random.beta(args.ricap_beta, args.ricap_beta)))
+            w_ = [w, I_x - w, w, I_x - w]
+            h_ = [h, h, I_y - h, I_y - h]
 
-            # Since the gradients of optimizer's assigned params are unscaled, clips as usual:
-            torch.nn.utils.clip_grad_norm_(
-                model.parameters(), config.TRAIN.CLIP_GRAD_NORM
+            cropped_images = {}
+            c_ = {}
+            W_ = {}
+            for k in range(4):
+                idx = torch.randperm(input.size(0))
+                x_k = np.random.randint(0, I_x - w_[k] + 1)
+                y_k = np.random.randint(0, I_y - h_[k] + 1)
+                cropped_images[k] = input[idx][
+                    :, :, x_k : x_k + w_[k], y_k : y_k + h_[k]
+                ]
+                c_[k] = target[idx].cuda()
+                W_[k] = w_[k] * h_[k] / (I_x * I_y)
+
+            patched_images = torch.cat(
+                (
+                    torch.cat((cropped_images[0], cropped_images[1]), 2),
+                    torch.cat((cropped_images[2], cropped_images[3]), 2),
+                ),
+                3,
+            )
+            patched_images = patched_images.cuda()
+
+            if args.amp:
+                with autocast():
+                    output = model(patched_images)
+                    loss = sum([W_[k] * criterion(output, c_[k]) for k in range(4)])
+            else:
+                output = model(patched_images)
+                loss = sum([W_[k] * criterion(output, c_[k]) for k in range(4)])
+
+            acc = sum([W_[k] * accuracy(output, c_[k])[0] for k in range(4)])
+        elif args.mixup:
+            l = np.random.beta(args.mixup_alpha, args.mixup_alpha)
+
+            idx = torch.randperm(input.size(0))
+            input_a, input_b = input, input[idx]
+            target_a, target_b = target, target[idx]
+
+            mixed_input = l * input_a + (1 - l) * input_b
+
+            target_a = target_a.cuda()
+            target_b = target_b.cuda()
+            mixed_input = mixed_input.cuda()
+
+            output = model(mixed_input)
+            loss = l * criterion(output, target_a) + (1 - l) * criterion(
+                output, target_b
             )
 
-        scaler.step(optimizer)
-        scaler.update()
-        # measure accuracy and record loss
-        losses.update(loss.item(), x.size(0))
+            acc = (
+                l * accuracy(output, target_a)[0]
+                + (1 - l) * accuracy(output, target_b)[0]
+            )
+        elif args.cutmix:
+            lam = np.random.beta(args.beta, args.beta)
+            rand_index = torch.randperm(input.size()[0]).cuda()
+            target_a = target
+            target_b = target[rand_index]
+            bbx1, bby1, bbx2, bby2 = rand_bbox(input.size(), lam)
+            input[:, :, bbx1:bbx2, bby1:bby2] = input[
+                rand_index, :, bbx1:bbx2, bby1:bby2
+            ]
+            # adjust lambda to exactly match pixel ratio
+            lam = 1 - (
+                (bbx2 - bbx1) * (bby2 - bby1) / (input.size()[-1] * input.size()[-2])
+            )
+            # compute output
+            output = model(input)
+            loss = criterion(output, target_a) * lam + criterion(output, target_b) * (
+                1.0 - lam
+            )
 
-        if mixup_fn:
-            y = torch.argmax(y, dim=1)
-        prec1, prec5 = accuracy(outputs, y, (1, 5))
+            acc = accuracy(output, target)[0]
+        elif args.optims in ["sam", "asam"]:
+            input = input.cuda()
+            target = target.cuda()
+            output = model(input)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.ascent_step()
+            acc = accuracy(output, target)[0]
+        else:
+            # logging.info("train.py line 134")
+            if args.half:
+                input = input.cuda().half()
+            else:
+                input = input.cuda()
+            target = target.cuda()
+            output = model(input)
+            loss = criterion(output, target)
+            acc, _ = accuracy(output, target, topk=(1, 5))
 
-        top1.update(prec1, x.size(0))
-        top5.update(prec5, x.size(0))
+        # compute gradient and do optimizing step
+        if args.amp:
+            # optimizer.zero_grad()
+            args.scaler.scale(loss).backward()
+            args.scaler.step(optimizer)
+            args.scaler.update()
+        elif args.optims in ["sam", "asam"]:
+            loss = criterion(model(input), target)
+            loss.backward()
+            if args.gradient_clip > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
+            optimizer.descent_step()
+        else:
+            # optimizer.zero_grad()
+            loss.backward()
+            if args.gradient_clip > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip)
+            optimizer.step()
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
+        losses.update(loss.item(), input.size(0))
+        scores.update(acc.item(), input.size(0))
 
-        if i % config.PRINT_FREQ == 0:
-            msg = '=> Epoch[{0}][{1}/{2}]: ' \
-                  'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
-                  'Speed {speed:.1f} samples/s\t' \
-                  'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
-                  'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
-                  'Accuracy@1 {top1.val:.3f} ({top1.avg:.3f})\t' \
-                  'Accuracy@5 {top5.val:.3f} ({top5.avg:.3f})\t'.format(
-                      epoch, i, len(train_loader),
-                      batch_time=batch_time,
-                      speed=x.size(0)/batch_time.val,
-                      data_time=data_time, loss=losses, top1=top1, top5=top5)
-            logging.info(msg)
+    log = OrderedDict([("loss", losses.avg), ("acc", scores.avg)])
+    if writer is not None:
+        writer.add_scalar("Train/Loss", losses.avg, epoch)
+        writer.add_scalar("Train/Acc", scores.avg, epoch)
 
-        torch.cuda.synchronize()
-
-    if writer_dict and comm.is_main_process():
-        writer = writer_dict['writer']
-        global_steps = writer_dict['train_global_steps']
-        writer.add_scalar('train_loss', losses.avg, global_steps)
-        writer.add_scalar('train_top1', top1.avg, global_steps)
-        writer_dict['train_global_steps'] = global_steps + 1
+    return log
 
 
 @torch.no_grad()
-def test(config, val_loader, model, criterion, output_dir, tb_log_dir,
-         writer_dict=None, distributed=False, real_labels=None,
-         valid_labels=None):
-    batch_time = AverageMeter()
+def validate(args, val_loader, model, criterion, epoch, writer):
     losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
+    scores = AverageMeter()
 
-    logging.info('=> switch to eval mode')
+    # switch to evaluate mode
     model.eval()
 
-    end = time.time()
-    for i, (x, y) in enumerate(val_loader):
-        # compute output
-        x = x.cuda(non_blocking=True)
-        y = y.cuda(non_blocking=True)
+    for i, (input, target) in enumerate(val_loader):
+        if args.half:
+            input = input.cuda().half()
+        else:
+            input = input.cuda()
+        target = target.cuda()
 
-        outputs = model(x)
-        if valid_labels:
-            outputs = outputs[:, valid_labels]
+        output = model(input)
+        loss = criterion(output, target)
 
-        loss = criterion(outputs, y)
+        acc1, _ = accuracy(output, target, topk=(1, 5))
 
-        if real_labels and not distributed:
-            real_labels.add_result(outputs)
+        losses.update(loss.item(), input.size(0))
+        scores.update(acc1.item(), input.size(0))
 
-        # measure accuracy and record loss
-        losses.update(loss.item(), x.size(0))
-
-        prec1, prec5 = accuracy(outputs, y, (1, 5))
-        top1.update(prec1, x.size(0))
-        top5.update(prec5, x.size(0))
-
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
-
-    logging.info('=> synchronize...')
-    comm.synchronize()
-    top1_acc, top5_acc, loss_avg = map(
-        _meter_reduce if distributed else lambda x: x.avg,
-        [top1, top5, losses]
+    log = OrderedDict(
+        [
+            ("loss", losses.avg),
+            ("acc", scores.avg),
+        ]
     )
 
-    if real_labels and not distributed:
-        real_top1 = real_labels.get_accuracy(k=1)
-        real_top5 = real_labels.get_accuracy(k=5)
-        msg = '=> TEST using Reassessed labels:\t' \
-            'Error@1 {error1:.3f}%\t' \
-            'Error@5 {error5:.3f}%\t' \
-            'Accuracy@1 {top1:.3f}%\t' \
-            'Accuracy@5 {top5:.3f}%\t'.format(
-                top1=real_top1,
-                top5=real_top5,
-                error1=100-real_top1,
-                error5=100-real_top5
-            )
-        logging.info(msg)
+    if writer is not None:
+        writer.add_scalar("Val/Loss", losses.avg, epoch)
+        writer.add_scalar("Val/Acc", scores.avg, epoch)
 
-    if comm.is_main_process():
-        msg = '=> TEST:\t' \
-            'Loss {loss_avg:.4f}\t' \
-            'Error@1 {error1:.3f}%\t' \
-            'Error@5 {error5:.3f}%\t' \
-            'Accuracy@1 {top1:.3f}%\t' \
-            'Accuracy@5 {top5:.3f}%\t'.format(
-                loss_avg=loss_avg, top1=top1_acc,
-                top5=top5_acc, error1=100-top1_acc,
-                error5=100-top5_acc
-            )
-        logging.info(msg)
-
-    if writer_dict and comm.is_main_process():
-        writer = writer_dict['writer']
-        global_steps = writer_dict['valid_global_steps']
-        writer.add_scalar('valid_loss', loss_avg, global_steps)
-        writer.add_scalar('valid_top1', top1_acc, global_steps)
-        writer_dict['valid_global_steps'] = global_steps + 1
-
-    logging.info('=> switch to train mode')
-    model.train()
-
-    return top1_acc
-
-
-def _meter_reduce(meter):
-    rank = comm.local_rank
-    meter_sum = torch.FloatTensor([meter.sum]).cuda(rank)
-    meter_count = torch.FloatTensor([meter.count]).cuda(rank)
-    torch.distributed.reduce(meter_sum, 0)
-    torch.distributed.reduce(meter_count, 0)
-    meter_avg = meter_sum / meter_count
-
-    return meter_avg.item()
-
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
+    return log

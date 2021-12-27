@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from ..registry import register_model
 
-__all__ = ['resnet_in_resnet']
+__all__ = ['rir']
 
 #geralized
 class ResnetInit(nn.Module):

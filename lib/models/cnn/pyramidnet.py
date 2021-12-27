@@ -15,6 +15,7 @@ import math
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from ..registry import register_model
 
 __all__ = ['pyramidnet272', 'pyramidnet164']
 
@@ -351,12 +352,12 @@ class PyramidNet(nn.Module):
 
 		return x
 
-
+@register_model
 def pyramidnet164(bottleneck=True, **kwargs):
 	"""PyramidNet164 for CIFAR and SVHN"""
 	return PyramidNet(bottleneck=bottleneck, depth=164, alpha=270, **kwargs)
 
-
+@register_model
 def pyramidnet272(bottleneck=True, **kwargs):
 	"""PyramidNet272 for CIFAR and SVHN"""
 	return PyramidNet(bottleneck=bottleneck, depth=272, alpha=200, **kwargs)

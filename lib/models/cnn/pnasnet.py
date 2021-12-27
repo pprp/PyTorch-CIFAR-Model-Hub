@@ -5,8 +5,9 @@ Paper: Progressive Neural Architecture Search
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
-__all__ = ['PNASNetA', 'PNASNetB']
+__all__ = ['pnasneta', 'pnasnetb']
 
 
 class SepConv(nn.Module):
@@ -121,17 +122,17 @@ class PNASNet(nn.Module):
         out = self.linear(out.view(out.size(0), -1))
         return out
 
-
-def PNASNetA(num_classes=10):
+@register_model
+def pnasneta(num_classes=10):
     return PNASNet(CellA, num_cells=6, num_planes=44, num_classes=num_classes)
 
-
-def PNASNetB(num_classes=10):
+@register_model
+def pnasnetb(num_classes=10):
     return PNASNet(CellB, num_cells=6, num_planes=32, num_classes=num_classes)
 
 
 def test():
-    net = PNASNetB()
+    net = pnasneta()
     x = torch.randn(1, 3, 32, 32)
     y = net(x)
     print(y)

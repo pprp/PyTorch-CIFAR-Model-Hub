@@ -9,6 +9,7 @@
 
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
 
 class BasicConv2d(nn.Module):
@@ -327,7 +328,7 @@ class InceptionV3(nn.Module):
         x = self.linear(x)
         return x
 
-
+@register_model
 def inceptionv3(num_classes=10):
     return InceptionV3(num_classes)
 

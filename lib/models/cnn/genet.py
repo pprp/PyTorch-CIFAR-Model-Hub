@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ["ge_resnext29_8x64d", "ge_resnext29_16x64d"]
 
@@ -197,10 +198,10 @@ class GeResNeXt(nn.Module):
         x = x.view(-1, self.stages[3])
         return self.fc(x)
 
-
+@register_model
 def ge_resnext29_8x64d(num_classes):
     return GeResNeXt(cardinality=8, depth=29, num_classes=num_classes, base_width=64)
 
-
+@register_model
 def ge_resnext29_16x64d(num_classes):
     return GeResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)

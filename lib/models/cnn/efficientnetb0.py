@@ -7,6 +7,7 @@ Reference: https://github.com/keras-team/keras-applications/blob/master/keras_ap
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['EfficientNetB0']
 
@@ -152,7 +153,7 @@ class EfficientNet(nn.Module):
         out = self.linear(out)
         return out
 
-
+@register_model
 def EfficientNetB0(num_classes=10):
     cfg = {
         'num_blocks': [1, 2, 2, 3, 3, 4, 1],

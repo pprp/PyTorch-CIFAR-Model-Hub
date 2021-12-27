@@ -10,6 +10,7 @@
 
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
 __all__ = ['nasnet']
 
@@ -339,8 +340,7 @@ class NasNetA(nn.Module):
 
         return x
 
-
+@register_model
 def nasnet(num_classes=10):
-
     # stem filters must be 44, it's a pytorch workaround, cant change to other number
     return NasNetA(4, 2, 44, 44, class_num=num_classes)

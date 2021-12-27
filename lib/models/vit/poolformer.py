@@ -6,6 +6,9 @@ import copy
 import torch
 import torch.nn as nn
 from .utils.utils import trunc_normal_, DropPath
+from ..registry import register_model
+
+__all__ = ["poolformer_s12", "poolformer_s24", "poolformer_s36"]
 
 
 class PatchEmbed(nn.Module):
@@ -398,6 +401,7 @@ class PoolFormer(nn.Module):
         return cls_out
 
 
+@register_model
 def poolformer_s12(num_classes=10, **kwargs):
     """
     PoolFormer-S12 model, Params: 12M
@@ -421,6 +425,7 @@ def poolformer_s12(num_classes=10, **kwargs):
     return model
 
 
+@register_model
 def poolformer_s24(num_classes=10, **kwargs):
     """
     PoolFormer-S24 model, Params: 21M
@@ -440,6 +445,7 @@ def poolformer_s24(num_classes=10, **kwargs):
     return model
 
 
+@register_model
 def poolformer_s36(num_classes=10, **kwargs):
     """
     PoolFormer-S36 model, Params: 31M

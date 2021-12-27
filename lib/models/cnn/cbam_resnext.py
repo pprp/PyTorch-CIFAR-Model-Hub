@@ -3,6 +3,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ["cbam_resnext29_8x64d", "cbam_resnext29_16x64d"]
 
@@ -280,10 +281,10 @@ class CBAMResNeXt(nn.Module):
         x = x.view(-1, self.stages[3])
         return self.fc(x)
 
-
+@register_model
 def cbam_resnext29_8x64d(num_classes):
     return CBAMResNeXt(cardinality=8, depth=29, num_classes=num_classes, base_width=64)
 
-
+@register_model
 def cbam_resnext29_16x64d(num_classes):
     return CBAMResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)

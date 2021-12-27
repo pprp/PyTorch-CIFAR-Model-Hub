@@ -1,6 +1,6 @@
 # A PyTorch Implementation of CIFAR Tricks
 
-![](utils/logo.png)
+![](figures/logo.png)
 
 CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，正则化方法等，并进行了实现。如果有所补充，可以提issue或者进行PR。
 
@@ -11,8 +11,8 @@ CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，�
 - torchvision+0.9.0+cu111
 - tqdm=4.26.0
 - PyYAML=6.0
-
-
+- einops
+- torchsummary
 
 
 ## 1. Implements

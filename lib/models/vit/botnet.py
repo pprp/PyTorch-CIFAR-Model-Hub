@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
+__all__ = ['botnet']
 
 def get_n_params(model):
     pp=0
@@ -140,14 +142,14 @@ class ResNet(nn.Module):
         out = self.fc(out)
         return out
 
-
-def BoTNet_ResNet50(num_classes=10, resolution=(32, 32), heads=4):
+@register_model
+def botnet(num_classes=10, resolution=(32, 32), heads=4):
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes, resolution=resolution, heads=heads)
 
 
 def main():
     x = torch.randn([2, 3, 224, 224])
-    model = BoTNet_ResNet50(resolution=tuple(x.shape[2:]), heads=8)
+    model = botnet(resolution=tuple(x.shape[2:]), heads=8)
     print(model(x).size())
     print(get_n_params(model))
 

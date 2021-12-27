@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchsummary
 
 from models.vit.layers import TransformerEncoder
-# from layers import TransformerEncoder
+from ..registry import register_model
 
 class ViT(nn.Module):
     def __init__(self, in_c:int=3, num_classes:int=10, img_size:int=32, patch:int=8, dropout:float=0., num_layers:int=7, hidden:int=384, mlp_hidden:int=384*4, head:int=8, is_cls_token:bool=True):
@@ -49,6 +49,10 @@ class ViT(nn.Module):
         out = out.reshape(x.size(0), self.patch**2 ,-1)
         return out
 
+
+@register_model
+def vit(**kwargs):
+    return ViT(**kwargs)
 
 if __name__ == "__main__":
     b,c,h,w = 4, 3, 32, 32

@@ -10,45 +10,45 @@
 
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
-__all__=['squeezenet']
+__all__ = ["squeezenet"]
+
 
 class Fire(nn.Module):
-
     def __init__(self, in_channel, out_channel, squzee_channel):
 
         super().__init__()
         self.squeeze = nn.Sequential(
             nn.Conv2d(in_channel, squzee_channel, 1),
             nn.BatchNorm2d(squzee_channel),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 
         self.expand_1x1 = nn.Sequential(
             nn.Conv2d(squzee_channel, int(out_channel / 2), 1),
             nn.BatchNorm2d(int(out_channel / 2)),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 
         self.expand_3x3 = nn.Sequential(
             nn.Conv2d(squzee_channel, int(out_channel / 2), 3, padding=1),
             nn.BatchNorm2d(int(out_channel / 2)),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 
     def forward(self, x):
 
         x = self.squeeze(x)
-        x = torch.cat([
-            self.expand_1x1(x),
-            self.expand_3x3(x)
-        ], 1)
+        x = torch.cat([self.expand_1x1(x), self.expand_3x3(x)], 1)
 
         return x
+
 
 class SqueezeNet(nn.Module):
 
     """mobile net with simple bypass"""
+
     def __init__(self, class_num=100):
 
         super().__init__()
@@ -56,7 +56,7 @@ class SqueezeNet(nn.Module):
             nn.Conv2d(3, 96, 3, padding=1),
             nn.BatchNorm2d(96),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, 2)
+            nn.MaxPool2d(2, 2),
         )
 
         self.fire2 = Fire(96, 128, 16)
@@ -94,5 +94,7 @@ class SqueezeNet(nn.Module):
 
         return x
 
+
+@register_model
 def squeezenet(num_classes=100):
     return SqueezeNet(class_num=num_classes)

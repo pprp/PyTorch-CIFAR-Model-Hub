@@ -1,6 +1,5 @@
 import argparse
 from torch.cuda.amp import GradScaler as GradScaler
-import os
 
 
 def str2bool(v):
@@ -22,7 +21,10 @@ def parse_args():
     )
     parser.add_argument("--gpu", default="0", type=str, help="gpu id")
     parser.add_argument(
-        "--config", help="configuration file", type=str, default="config/default.yaml"
+        "--config",
+        help="configuration file",
+        type=str,
+        default="lib/config/default.yaml",
     )
 
     ########### DATASET PART #####################

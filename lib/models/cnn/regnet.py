@@ -1,18 +1,19 @@
-'''RegNet in PyTorch.
+"""RegNet in PyTorch.
 
 Paper: "Designing Network Design Spaces".
 
 Reference: https://github.com/keras-team/keras-applications/blob/master/keras_applications/efficientnet.py
-'''
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ["RegNetX_200MF"]
 
 
 class SE(nn.Module):
-    '''Squeeze-and-Excitation block.'''
+    """Squeeze-and-Excitation block."""
 
     def __init__(self, in_planes, se_planes):
         super(SE, self).__init__()
@@ -36,8 +37,15 @@ class Block(nn.Module):
         self.bn1 = nn.BatchNorm2d(w_b)
         # 3x3
         num_groups = w_b // group_width
-        self.conv2 = nn.Conv2d(w_b, w_b, kernel_size=3,
-                               stride=stride, padding=1, groups=num_groups, bias=False)
+        self.conv2 = nn.Conv2d(
+            w_b,
+            w_b,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            groups=num_groups,
+            bias=False,
+        )
         self.bn2 = nn.BatchNorm2d(w_b)
         # se
         self.with_se = se_ratio > 0
@@ -51,9 +59,8 @@ class Block(nn.Module):
         self.shortcut = nn.Sequential()
         if stride != 1 or w_in != w_out:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(w_in, w_out,
-                          kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(w_out)
+                nn.Conv2d(w_in, w_out, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(w_out),
             )
 
     def forward(self, x):
@@ -72,28 +79,28 @@ class RegNet(nn.Module):
         super(RegNet, self).__init__()
         self.cfg = cfg
         self.in_planes = 64
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
-                               stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(0)
         self.layer2 = self._make_layer(1)
         self.layer3 = self._make_layer(2)
         self.layer4 = self._make_layer(3)
-        self.linear = nn.Linear(self.cfg['widths'][-1], num_classes)
+        self.linear = nn.Linear(self.cfg["widths"][-1], num_classes)
 
     def _make_layer(self, idx):
-        depth = self.cfg['depths'][idx]
-        width = self.cfg['widths'][idx]
-        stride = self.cfg['strides'][idx]
-        group_width = self.cfg['group_width']
-        bottleneck_ratio = self.cfg['bottleneck_ratio']
-        se_ratio = self.cfg['se_ratio']
+        depth = self.cfg["depths"][idx]
+        width = self.cfg["widths"][idx]
+        stride = self.cfg["strides"][idx]
+        group_width = self.cfg["group_width"]
+        bottleneck_ratio = self.cfg["bottleneck_ratio"]
+        se_ratio = self.cfg["se_ratio"]
 
         layers = []
         for i in range(depth):
             s = stride if i == 0 else 1
-            layers.append(Block(self.in_planes, width,
-                                s, group_width, bottleneck_ratio, se_ratio))
+            layers.append(
+                Block(self.in_planes, width, s, group_width, bottleneck_ratio, se_ratio)
+            )
             self.in_planes = width
         return nn.Sequential(*layers)
 
@@ -109,38 +116,41 @@ class RegNet(nn.Module):
         return out
 
 
+@register_model
 def RegNetX_200MF(num_classes=10):
     cfg = {
-        'depths': [1, 1, 4, 7],
-        'widths': [24, 56, 152, 368],
-        'strides': [1, 1, 2, 2],
-        'group_width': 8,
-        'bottleneck_ratio': 1,
-        'se_ratio': 0,
+        "depths": [1, 1, 4, 7],
+        "widths": [24, 56, 152, 368],
+        "strides": [1, 1, 2, 2],
+        "group_width": 8,
+        "bottleneck_ratio": 1,
+        "se_ratio": 0,
     }
-    return RegNet(cfg,num_classes=num_classes)
+    return RegNet(cfg, num_classes=num_classes)
 
 
+@register_model
 def RegNetX_400MF():
     cfg = {
-        'depths': [1, 2, 7, 12],
-        'widths': [32, 64, 160, 384],
-        'strides': [1, 1, 2, 2],
-        'group_width': 16,
-        'bottleneck_ratio': 1,
-        'se_ratio': 0,
+        "depths": [1, 2, 7, 12],
+        "widths": [32, 64, 160, 384],
+        "strides": [1, 1, 2, 2],
+        "group_width": 16,
+        "bottleneck_ratio": 1,
+        "se_ratio": 0,
     }
     return RegNet(cfg)
 
 
+@register_model
 def RegNetY_400MF():
     cfg = {
-        'depths': [1, 2, 7, 12],
-        'widths': [32, 64, 160, 384],
-        'strides': [1, 1, 2, 2],
-        'group_width': 16,
-        'bottleneck_ratio': 1,
-        'se_ratio': 0.25,
+        "depths": [1, 2, 7, 12],
+        "widths": [32, 64, 160, 384],
+        "strides": [1, 1, 2, 2],
+        "group_width": 16,
+        "bottleneck_ratio": 1,
+        "se_ratio": 0.25,
     }
     return RegNet(cfg)
 
@@ -153,5 +163,5 @@ def test():
     print(y.shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

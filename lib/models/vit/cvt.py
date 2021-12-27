@@ -4,8 +4,9 @@ import torch.nn.functional as F
 
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
+from ..registry import register_model
 
-# helper methods
+__all__ = ["cvt"]
 
 
 def group_dict_by_key(cond, d):
@@ -178,7 +179,7 @@ class CvT(nn.Module):
         *,
         num_classes=10,
         s1_emb_dim=64,
-        s1_emb_kernel=3, # from 7 to 3
+        s1_emb_kernel=3,  # from 7 to 3
         s1_emb_stride=4,
         s1_proj_kernel=3,
         s1_kv_proj_stride=2,
@@ -245,6 +246,11 @@ class CvT(nn.Module):
 
     def forward(self, x):
         return self.layers(x)
+
+
+@register_model
+def cvt(**kwargs):
+    return CvT(**kwargs)
 
 
 if __name__ == "__main__":

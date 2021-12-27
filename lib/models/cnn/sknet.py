@@ -2,13 +2,14 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ["sk_resnext29_16x32d", "sk_resnext29_16x64d"]
 
 
 class SKConv(nn.Module):
     def __init__(self, features, M, G, r, stride=1, L=32):
-        """ Constructor
+        """Constructor
         Args:
             features: input channel dimensionality.
             M: the number of branchs.
@@ -203,9 +204,11 @@ class SkResNeXt(nn.Module):
         return self.fc(x)
 
 
+@register_model
 def sk_resnext29_16x32d(num_classes):
     return SkResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=32)
 
 
+@register_model
 def sk_resnext29_16x64d(num_classes):
     return SkResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)

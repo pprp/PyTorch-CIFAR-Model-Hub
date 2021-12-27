@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 
 from einops import rearrange
+from ..registry import register_model
+
+__all__ = ["mobilevit_s", "mobilevit_xs", "mobilevit_xxs"]
 
 
 def conv_1x1_bn(inp, oup):
@@ -206,12 +209,12 @@ class MobileViT(nn.Module):
 
         self.mv2 = nn.ModuleList([])
         self.mv2.append(MV2Block(channels[0], channels[1], 1, expansion))
-        self.mv2.append(MV2Block(channels[1], channels[2], 1, expansion)) # from 2 to 1 
+        self.mv2.append(MV2Block(channels[1], channels[2], 1, expansion))  # from 2 to 1
         self.mv2.append(MV2Block(channels[2], channels[3], 1, expansion))
         self.mv2.append(MV2Block(channels[2], channels[3], 1, expansion))  # Repeat
         self.mv2.append(MV2Block(channels[3], channels[4], 2, expansion))
         self.mv2.append(MV2Block(channels[5], channels[6], 2, expansion))
-        self.mv2.append(MV2Block(channels[7], channels[8], 1, expansion)) # from 2 to 1 
+        self.mv2.append(MV2Block(channels[7], channels[8], 1, expansion))  # from 2 to 1
 
         self.mvit = nn.ModuleList([])
         self.mvit.append(
@@ -232,7 +235,7 @@ class MobileViT(nn.Module):
 
         self.conv2 = conv_1x1_bn(channels[-2], channels[-1])
 
-        self.pool = nn.AvgPool2d(ih // 8, 1) # from 32 to 8
+        self.pool = nn.AvgPool2d(ih // 8, 1)  # from 32 to 8
         self.fc = nn.Linear(channels[-1], num_classes, bias=False)
 
     def forward(self, x):
@@ -259,18 +262,21 @@ class MobileViT(nn.Module):
         return x
 
 
+@register_model
 def mobilevit_xxs(size=32, num_classes=10):
     dims = [64, 80, 96]
     channels = [16, 16, 24, 24, 48, 48, 64, 64, 80, 80, 320]
     return MobileViT((size, size), dims, channels, num_classes=num_classes, expansion=2)
 
 
+@register_model
 def mobilevit_xs(size=32, num_classes=10):
     dims = [96, 120, 144]
     channels = [16, 32, 48, 48, 64, 64, 80, 80, 96, 96, 384]
     return MobileViT((size, size), dims, channels, num_classes=num_classes)
 
 
+@register_model
 def mobilevit_s(size=32, num_classes=10):
     dims = [144, 192, 240]
     channels = [16, 32, 64, 64, 96, 96, 128, 128, 160, 160, 640]

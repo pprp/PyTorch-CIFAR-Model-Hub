@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['GoogLeNet']
 
@@ -98,6 +99,9 @@ class GoogLeNet(nn.Module):
         out = self.linear(out)
         return out
 
+@register_model
+def googlenet():
+    return GoogLeNet()
 
 def test():
     net = GoogLeNet()

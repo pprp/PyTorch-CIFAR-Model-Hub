@@ -1,6 +1,7 @@
 '''LeNet in PyTorch.'''
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['LeNet']
 
@@ -24,3 +25,7 @@ class LeNet(nn.Module):
         out = F.relu(self.fc2(out))
         out = self.fc3(out)
         return out
+
+@register_model
+def lenet():
+    return LeNet()

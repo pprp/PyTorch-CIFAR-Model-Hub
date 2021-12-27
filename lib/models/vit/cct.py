@@ -3,6 +3,7 @@ import torch.nn as nn
 from .utils.transformers import TransformerClassifier
 from .utils.tokenizer import Tokenizer
 from .utils.helpers import pe_check
+from ..registry import register_model
 
 
 class CCT(nn.Module):
@@ -167,6 +168,7 @@ def cct_14(arch, pretrained, progress, *args, **kwargs):
     )
 
 
+@register_model
 def cct_2_3x2_32(
     pretrained=False,
     progress=False,
@@ -190,6 +192,7 @@ def cct_2_3x2_32(
     )
 
 
+@register_model
 def cct_2_3x2_32_sine(
     pretrained=False,
     progress=False,
@@ -213,6 +216,7 @@ def cct_2_3x2_32_sine(
     )
 
 
+@register_model
 def cct_4_3x2_32(
     pretrained=False,
     progress=False,
@@ -236,6 +240,7 @@ def cct_4_3x2_32(
     )
 
 
+@register_model
 def cct_4_3x2_32_sine(
     pretrained=False,
     progress=False,
@@ -259,6 +264,7 @@ def cct_4_3x2_32_sine(
     )
 
 
+@register_model
 def cct_6_3x1_32(
     pretrained=False,
     progress=False,
@@ -282,6 +288,7 @@ def cct_6_3x1_32(
     )
 
 
+@register_model
 def cct_6_3x1_32_sine(
     pretrained=False,
     progress=False,
@@ -305,6 +312,7 @@ def cct_6_3x1_32_sine(
     )
 
 
+@register_model
 def cct_6_3x2_32(
     pretrained=False,
     progress=False,
@@ -328,6 +336,7 @@ def cct_6_3x2_32(
     )
 
 
+@register_model
 def cct_6_3x2_32_sine(
     pretrained=False,
     progress=False,
@@ -351,6 +360,7 @@ def cct_6_3x2_32_sine(
     )
 
 
+@register_model
 def cct_7_3x1_32(
     pretrained=False,
     progress=False,
@@ -374,6 +384,7 @@ def cct_7_3x1_32(
     )
 
 
+@register_model
 def cct_7_3x1_32_sine(
     pretrained=False,
     progress=False,
@@ -397,6 +408,7 @@ def cct_7_3x1_32_sine(
     )
 
 
+@register_model
 def cct_7_3x1_32_c100(
     pretrained=False,
     progress=False,
@@ -420,6 +432,7 @@ def cct_7_3x1_32_c100(
     )
 
 
+@register_model
 def cct_7_3x1_32_sine_c100(
     pretrained=False,
     progress=False,
@@ -443,6 +456,7 @@ def cct_7_3x1_32_sine_c100(
     )
 
 
+@register_model
 def cct_7_3x2_32(
     pretrained=False,
     progress=False,
@@ -466,6 +480,7 @@ def cct_7_3x2_32(
     )
 
 
+@register_model
 def cct_7_3x2_32_sine(
     pretrained=False,
     progress=False,
@@ -489,6 +504,7 @@ def cct_7_3x2_32_sine(
     )
 
 
+@register_model
 def cct_7_7x2_224(
     pretrained=False,
     progress=False,
@@ -512,6 +528,7 @@ def cct_7_7x2_224(
     )
 
 
+@register_model
 def cct_7_7x2_224_sine(
     pretrained=False,
     progress=False,
@@ -535,6 +552,7 @@ def cct_7_7x2_224_sine(
     )
 
 
+@register_model
 def cct_14_7x2_224(
     pretrained=False,
     progress=False,
@@ -558,6 +576,7 @@ def cct_14_7x2_224(
     )
 
 
+@register_model
 def cct_14_7x2_384(
     pretrained=False,
     progress=False,
@@ -581,6 +600,7 @@ def cct_14_7x2_384(
     )
 
 
+@register_model
 def cct_14_7x2_384_fl(
     pretrained=False,
     progress=False,

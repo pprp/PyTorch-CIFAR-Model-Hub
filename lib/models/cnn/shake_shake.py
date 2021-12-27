@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from ..registry import register_model
 
 __all__ = ["shake_resnet26_2x32d", "shake_resnet26_2x64d"]
 
@@ -121,10 +122,10 @@ class ShakeResNet(nn.Module):
         return nn.Sequential(*layers)
 
 
-
+@register_model
 def shake_resnet26_2x32d(num_classes):
     return ShakeResNet(depth=26, base_width=32, num_classes=num_classes)
 
-
+@register_model
 def shake_resnet26_2x64d(num_classes):
     return ShakeResNet(depth=26, base_width=64, num_classes=num_classes)

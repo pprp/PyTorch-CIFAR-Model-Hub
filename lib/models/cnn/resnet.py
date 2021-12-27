@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..registry import register_model
 
 __all__ = ['ResNet18', "ResNet34", "ResNet50", "ResNet101", "ResNet152"]
 
@@ -108,23 +109,23 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
-
+@register_model
 def ResNet18(num_classes=10):
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
 
-
+@register_model
 def ResNet34(num_classes=10):
     return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes)
 
-
+@register_model
 def ResNet50(num_classes=10):
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes)
 
-
+@register_model
 def ResNet101(num_classes=10):
     return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes)
 
-
+@register_model
 def ResNet152(num_classes=10):
     return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=num_classes)
 

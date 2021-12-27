@@ -6,8 +6,9 @@ Mobile Networks for Classification, Detection and Segmentation" for more details
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
-__all__ = ['MobileNetV2']
+__all__ = ['mobilenetv2']
 
 class Block(nn.Module):
     '''expand + depthwise + pointwise'''
@@ -77,6 +78,9 @@ class MobileNetV2(nn.Module):
         out = self.linear(out)
         return out
 
+@register_model
+def mobilenetv2():
+    return MobileNetV2()
 
 def test():
     net = MobileNetV2()

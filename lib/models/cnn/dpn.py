@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['DPN26']
 
@@ -83,7 +84,7 @@ class DPN(nn.Module):
         out = self.linear(out)
         return out
 
-
+@register_model
 def DPN26(num_classes=10):
     cfg = {
         'in_planes': (96, 192, 384, 768),
@@ -93,7 +94,7 @@ def DPN26(num_classes=10):
     }
     return DPN(cfg, num_classes=10)
 
-
+@register_model
 def DPN92():
     cfg = {
         'in_planes': (96, 192, 384, 768),

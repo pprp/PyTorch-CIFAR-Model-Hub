@@ -6,9 +6,6 @@ import torch.nn.functional as F
 
 from models.att_overfit.cbam import *
 
-# from bam import *
-# from cbam import *
-
 
 class BasicConv(nn.Module):
     def __init__(

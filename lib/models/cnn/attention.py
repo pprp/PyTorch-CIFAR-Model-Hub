@@ -11,6 +11,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['attention56', 'attention92']
 
@@ -351,10 +352,10 @@ class Attention(nn.Module):
 
         return nn.Sequential(*layers)
 
-
+@register_model
 def attention56(num_classes=100):
     return Attention([1, 1, 1], num_classes)
 
-
+@register_model
 def attention92(num_classes=100):
     return Attention([1, 2, 3], num_classes)

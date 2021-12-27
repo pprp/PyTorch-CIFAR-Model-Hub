@@ -10,6 +10,7 @@
 
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
 __all__ = ['resnet_in_resnet']
 
@@ -172,6 +173,6 @@ class ResnetInResneet(nn.Module):
                 torch.nn.init.kaiming_normal_(m.weight)
                 m.bias.data.fill_(0.01)
 
-
-def resnet_in_resnet(num_classes=10):
+@register_model
+def rir(num_classes=10):
     return ResnetInResneet(num_classes=num_classes)

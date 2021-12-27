@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torch.nn.modules import padding
+from .registry import register_model
 
 __all__ = ["ToyNet"]
 
@@ -76,6 +77,12 @@ class ToyNet(nn.Module):
         # out = F.relu(self.fc2(out))
         # out = self.fc3(out)
         return self.fc1(out)
+
+
+@register_model
+def ToyNet_S(**kwargs):
+    return ToyNet(**kwargs)
+    
 
 
 if __name__ == "__main__":

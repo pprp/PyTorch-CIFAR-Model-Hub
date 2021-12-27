@@ -5,6 +5,7 @@ See the paper "ShuffleNet: An Extremely Efficient Convolutional Neural Network f
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['ShuffleNetG2','ShuffleNetG3']
 
@@ -84,7 +85,7 @@ class ShuffleNet(nn.Module):
         out = self.linear(out)
         return out
 
-
+@register_model
 def ShuffleNetG2(num_classes=10):
     cfg = {
         'out_planes': [200,400,800],
@@ -93,6 +94,7 @@ def ShuffleNetG2(num_classes=10):
     }
     return ShuffleNet(cfg,num_classes=num_classes)
 
+@register_model
 def ShuffleNetG3(num_classes=10):
     cfg = {
         'out_planes': [240,480,960],

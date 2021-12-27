@@ -4,6 +4,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from ..registry import register_model
 
 __all__ = ['densenet_cifar']
 
@@ -88,7 +89,7 @@ class DenseNet(nn.Module):
         out = self.linear(out)
         return out
 
-
+@register_model
 def densenet_cifar(num_classes=10):
     return DenseNet(Bottleneck, [6, 12, 24, 16], growth_rate=12, num_classes=num_classes)
 

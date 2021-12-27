@@ -11,6 +11,7 @@ __all__ = ['inceptionv4', 'inception_resnet_v2']
 
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
 
 class BasicConv2d(nn.Module):
@@ -573,10 +574,10 @@ class InceptionResNetV2(nn.Module):
 
         return layers
 
-
+@register_model
 def inceptionv4(num_classes=10):
     return InceptionV4(4, 7, 3, class_nums=num_classes)
 
-
+@register_model
 def inception_resnet_v2(num_classes=10):
     return InceptionResNetV2(5, 10, 5, class_nums=num_classes)

@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.nn.init as init
 
 from torch.autograd import Variable
+from ..registry import register_model
 
 __all__ = ['ResNet', 'resnet20']
 
@@ -93,6 +94,6 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
-
-def resnet20(num_classes=100):
+@register_model
+def resnet20(num_classes=10):
     return ResNet(BasicBlock, [3, 3, 3], num_classes=num_classes)

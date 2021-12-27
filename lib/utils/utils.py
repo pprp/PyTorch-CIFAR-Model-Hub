@@ -1,11 +1,35 @@
-import random
-import math
-from PIL import Image
-import numpy as np
-
-import torch
-import torch.nn as nn 
 import argparse
+import math
+import random
+
+import numpy as np
+import torch
+import torch.nn as nn
+from PIL import Image
+from torch.optim.lr_scheduler import _LRScheduler
+
+
+class FindLR(_LRScheduler):
+    """exponentially increasing learning rate
+    Args:
+        optimizer: optimzier(e.g. SGD)
+        num_iter: totoal_iters
+        max_lr: maximum  learning rate
+    """
+
+    def __init__(self, optimizer, max_lr=10, num_iter=100, last_epoch=-1):
+
+        self.total_iters = num_iter
+        self.max_lr = max_lr
+        super().__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+
+        return [
+            base_lr
+            * (self.max_lr / base_lr) ** (self.last_epoch / (self.total_iters + 1e-32))
+            for base_lr in self.base_lrs
+        ]
 
 
 def str2bool(v):
@@ -20,10 +44,11 @@ def str2bool(v):
 def count_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+
 def rand_bbox(size, lam):
     W = size[2]
     H = size[3]
-    cut_rat = np.sqrt(1. - lam)
+    cut_rat = np.sqrt(1.0 - lam)
     cut_w = np.int(W * cut_rat)
     cut_h = np.int(H * cut_rat)
 
@@ -37,6 +62,7 @@ def rand_bbox(size, lam):
     bby2 = np.clip(cy + cut_h // 2, 0, H)
 
     return bbx1, bby1, bbx2, bby2
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -105,14 +131,15 @@ class RandomErase(object):
 
                 return img
 
+
 def split_weights(net):
     """split network weights into to categlories,
     one are weights in conv layer and linear layer,
-    others are other learnable paramters(conv bias, 
+    others are other learnable paramters(conv bias,
     bn weights, bn bias, linear bias)
     Args:
         net: network architecture
-    
+
     Returns:
         a dictionary of params splite into to categlories
     """
@@ -126,13 +153,13 @@ def split_weights(net):
 
             if m.bias is not None:
                 no_decay.append(m.bias)
-        
-        else: 
-            if hasattr(m, 'weight'):
+
+        else:
+            if hasattr(m, "weight"):
                 no_decay.append(m.weight)
-            if hasattr(m, 'bias'):
+            if hasattr(m, "bias"):
                 no_decay.append(m.bias)
-        
+
     assert len(list(net.parameters())) == len(decay) + len(no_decay)
 
     return [dict(params=decay), dict(params=no_decay, weight_decay=0)]

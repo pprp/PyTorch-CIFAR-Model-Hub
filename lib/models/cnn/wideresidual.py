@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from ..registry import register_model
 
 __all__ = ['wideresnet']
 class WideBasic(nn.Module):
@@ -99,6 +100,7 @@ class WideResNet(nn.Module):
 
 
 # Table 9: Best WRN performance over various datasets, single run results.
+@register_model
 def wideresnet(depth=40, widen_factor=10,num_classes=10):
     net = WideResNet(num_classes, WideBasic, depth=depth, widen_factor=widen_factor)
     return net

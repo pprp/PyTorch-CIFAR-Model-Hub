@@ -8,11 +8,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from dataset.loader import build_dataloader
-from models import build_model
-from utils.utils import *
-from utils.FindLR import FindLR
-from utils.utils import str2bool
+import _init_paths
+
+from lib.dataset import build_dataloader
+from lib.models import build_model
+from lib.utils.utils import *
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

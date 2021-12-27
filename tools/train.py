@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import logging
 import os
+import os.path as osp
 import sys
 import time
 from collections import OrderedDict
@@ -12,20 +13,18 @@ import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import yaml
-
 import _init_paths
 
-from dataset.loader import build_dataloader
-from models import build_model
+from lib.core.loss import build_criterion
+from lib.dataset import build_dataloader
+from lib.models import build_model
+from lib.optim import build_optimizer
+from lib.scheduler import build_scheduler
+from lib.utils.args import parse_args
+from lib.utils.misc import Timer, build_expname
+from lib.utils.utils import *
 from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
-from utils.args import parse_args
-from utils.controller import (build_criterion, build_expname, build_optimizer,
-                              build_scheduler)
-from utils.misc import Timer
-from utils.utils import *
-
 
 HALF_FLAG = False
 

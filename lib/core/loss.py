@@ -1,6 +1,5 @@
-import torch
 import torch.nn as nn
-
+import torch 
 
 class LSR(nn.Module):
 
@@ -84,3 +83,13 @@ class LSR(nn.Module):
         else:
             raise ValueError('unrecognized option, expect reduction to be one of none, mean, sum')
 
+
+
+def build_criterion(args):
+    if args.crit == "ce":
+        criterion = nn.CrossEntropyLoss()
+    elif args.crit == "lsr":
+        criterion = LSR()
+    else:
+        raise "Not Implemented."
+    return criterion

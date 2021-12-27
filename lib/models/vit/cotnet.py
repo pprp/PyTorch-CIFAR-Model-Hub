@@ -7,10 +7,13 @@ import torch.nn as nn
 from functools import partial
 import torch.nn.functional as F
 from .utils.utils import *
-# from utils import * 
 
 import torch
 import torch.nn as nn
+
+from ..registry import register_model
+
+__all__ = ["convit_tiny", "convit_small", "convit_base"]
 
 
 class PatchEmbed(nn.Module):
@@ -475,6 +478,7 @@ class ConViT(nn.Module):
         return x
 
 
+@register_model
 def convit_tiny(num_classes=10, **kwargs):
     model = ConViT(
         local_up_to_layer=10,
@@ -489,6 +493,7 @@ def convit_tiny(num_classes=10, **kwargs):
     return model
 
 
+@register_model
 def convit_small(num_classes=10, **kwargs):
     model = ConViT(
         local_up_to_layer=10,
@@ -502,6 +507,7 @@ def convit_small(num_classes=10, **kwargs):
     return model
 
 
+@register_model
 def convit_base(num_classes=10, **kwargs):
     model = ConViT(
         local_up_to_layer=10,
@@ -514,7 +520,8 @@ def convit_base(num_classes=10, **kwargs):
     )
     return model
 
+
 if __name__ == "__main__":
     m = convit_small(10)
-    x = torch.ones(6,3,32,32)
+    x = torch.ones(6, 3, 32, 32)
     print(m(x).shape)

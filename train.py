@@ -40,7 +40,8 @@ def train(
         model = model.half()
 
     for i, (input, target) in enumerate(train_loader):
-        # from original paper's appendix
+        optimizer.zero_grad()
+
         if args.ricap:
             I_x, I_y = input.size()[2:]
 
@@ -137,14 +138,13 @@ def train(
             else:
                 input = input.cuda()
             target = target.cuda()
-            optimizer.zero_grad()
             output = model(input)
             loss = criterion(output, target)
             acc, _ = accuracy(output, target, topk=(1, 5))
 
         # compute gradient and do optimizing step
         if args.amp:
-            optimizer.zero_grad()
+            # optimizer.zero_grad()
             args.scaler.scale(loss).backward()
             args.scaler.step(optimizer)
             args.scaler.update()

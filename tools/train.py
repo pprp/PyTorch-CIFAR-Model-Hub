@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import argparse
 import logging
 import os
@@ -10,21 +12,20 @@ import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import yaml
+
+import _init_paths
+
+from dataset.loader import build_dataloader
+from models import build_model
 from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
-from dataset.loader import build_dataloader
-from model import build_model
 from utils.args import parse_args
-from utils.controller import (
-    build_criterion,
-    build_expname,
-    build_optimizer,
-    build_scheduler,
-)
+from utils.controller import (build_criterion, build_expname, build_optimizer,
+                              build_scheduler)
 from utils.misc import Timer
 from utils.utils import *
+
 
 HALF_FLAG = False
 
@@ -291,7 +292,7 @@ def main():
 
     best_acc = 0
     for epoch in range(args.epochs):
-        logging.info("Epoch [%03d/%03d]" % (epoch + 1, args.epochs))
+        logging.info("Epoch [%03d/%03d]" % (epoch, args.epochs))
         # train for one epoch
         train_log = train(
             args,

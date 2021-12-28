@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchsummary
 
-from models.vit.layers import TransformerEncoder
+from lib.models.vit.utils.layers import TransformerEncoder
 from ..registry import register_model
 
 class ViT(nn.Module):

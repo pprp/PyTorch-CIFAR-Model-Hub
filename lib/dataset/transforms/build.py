@@ -1,5 +1,5 @@
 import torchvision.transforms as transforms
-from utils.utils import RandomErase
+from .randomerase import RandomErase
 from .cutout import Cutout
 from .autoaugment import CIFAR10Policy
 

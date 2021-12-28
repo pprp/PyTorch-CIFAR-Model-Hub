@@ -3,10 +3,12 @@
 # python -m torch.utils.bottleneck train.py --model 'resnet20' --name "fast_training" --sched 'cosine' --epochs 1 --cutout True --sched "cosine" --lr 0.6 --bs 512 --nw 0 --fast True 
 
 
-python tools/train.py --model 'botnet' --name "botnet" --sched 'warmcosine' --epochs 100 --cutout False --lr 0.1 --bs 128 --nw 4 --optims "sgd" --weight-decay 1e-4 --gradient_clip 2.0 
+python tools/train.py --model 'cct_7_3x1_32' --name "cct_7_3x1_32" --sched 'warmcosine' --epochs 200 --cutout False --lr 5e-4 --bs 128 --nw 4 --optims "sgd" --weight-decay 3e-2 --gradient_clip 2.0 
 
 # gprof2dot -f pstats profile.prof | dot -Tpng -o out.png
 
+
+# python tools/train.py --model 'cct_7_3x1_32' --name "cct_7_3x1_32" --sched 'warmcosine' --epochs 200 --cutout False --lr 5e-4 --bs 128 --nw 4 --optims "sgd" --weight-decay 3e-2 --gradient_clip 2.0 
 
 # python train.py --model 'poolformer_s12' --name "poolformer_s12_dim128" --sched 'cosine' --epochs 200 --lr 0.01 
 

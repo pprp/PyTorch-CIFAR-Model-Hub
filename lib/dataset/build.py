@@ -69,6 +69,7 @@ def build_dataloader(name="cifar10", type="train", args=None):
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,
+                pin_memory=True,
             )
         elif type == "val":
             dataloader_type = DataLoader(
@@ -76,6 +77,7 @@ def build_dataloader(name="cifar10", type="train", args=None):
                 batch_size=args.bs,
                 shuffle=False,
                 num_workers=args.nw,
+                pin_memory=True,
             )
     elif name == "cifar100":
         if type == "train":
@@ -86,6 +88,7 @@ def build_dataloader(name="cifar10", type="train", args=None):
                 batch_size=args.bs,
                 shuffle=True,
                 num_workers=args.nw,
+                pin_memory=True,
             )
         elif type == "val":
             dataloader_type = DataLoader(
@@ -93,6 +96,7 @@ def build_dataloader(name="cifar10", type="train", args=None):
                 batch_size=args.bs,
                 shuffle=False,
                 num_workers=args.nw,
+                pin_memory=True,
             )
     else:
         raise "Type Error: {} Not Supported".format(name)

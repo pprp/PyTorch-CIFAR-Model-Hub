@@ -29,6 +29,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 def main():
     cudnn.benchmark = True
+    cudnn.deterministic = True 
 
     args = parse_args()
 

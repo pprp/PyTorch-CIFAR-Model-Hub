@@ -104,7 +104,7 @@ def main():
 
     best_acc = 0
     for epoch in range(args.epochs):
-        logging.info("Epoch [%03d/%03d]" % (epoch, args.epochs))
+        # logging.info("Epoch [%03d/%03d]" % (epoch, args.epochs))
         # train for one epoch
         train_log = train_one_epoch(
             args,
@@ -144,6 +144,10 @@ def main():
         log.to_csv("exps/%s/log.csv" % args.name, index=False)
 
         if val_log["acc"] > best_acc:
+            from glob import glob 
+            useless_files = glob("exps/%s/*.pth" % args.name)
+            for file in useless_files:
+                os.remove(file)
             torch.save(
                 model.state_dict(),
                 "exps/%s/model_%d.pth" % (args.name, (val_log["acc"] * 100)),

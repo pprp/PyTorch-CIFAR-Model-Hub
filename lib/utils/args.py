@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument(
         "--optims",
         default="sgd",
-        choices=["sgd", "adam", "adabound", "adaboundw", "nesterov", "sam", "asam"],
+        choices=["sgd", "adam", "adabound", "adaboundw", "nesterov", "sam", "asam", "adamw"],
         help="optimizer name support sgd, adabound",
     )
     parser.add_argument(

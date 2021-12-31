@@ -4,3 +4,4 @@ tqdm
 PyYAML
 einops 
 torchsummary
+hyperbox

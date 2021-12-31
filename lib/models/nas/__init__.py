@@ -1,0 +1,1 @@
+from .spos.spos import ShuffleNASNetV2

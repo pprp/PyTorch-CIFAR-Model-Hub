@@ -297,3 +297,5 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentati
 [7] https://github.com/Alibaba-MIIL/ImageNet21K
 
 [8] https://myrtle.ai/learn/how-to-train-your-resnet/
+
+[9] hyperbox 

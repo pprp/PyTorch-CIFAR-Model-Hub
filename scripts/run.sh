@@ -4,7 +4,9 @@
 
 # python tools/train.py --model 'ceit_32' --name "ceit_32" --sched 'warmcosine' --epochs 200 --cutout False --lr 0.01 --bs 128 --nw 4 --optims "adamw" --weight-decay 3e-2 --gradient_clip 2.0 
 
-python  tools/train.py --model 'shufflenetnasnet' --name "spos" --sched "cosine" --epochs 200 --lr 0.01 --bs 128 --nw 4
+# python  tools/train.py --model 'shufflenetnasnet' --name "spos" --sched "cosine" --epochs 200 --lr 0.01 --bs 128 --nw 4
+
+python tools/train.py --model 'convnext_tiny' --name "convnext_tiny" --optims adamw --epochs 200 --lr 0.01 --bs 128 --nw 4
 
 # python tools/train.py --model 'cct_7_3x1_32' --name "cct_7_3x1_32" --sched 'warmcosine' --epochs 200 --cutout False --lr 5e-4 --bs 128 --nw 4 --optims "sgd" --weight-decay 3e-2 --gradient_clip 2.0 
 

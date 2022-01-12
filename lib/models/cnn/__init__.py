@@ -35,3 +35,4 @@ from .stochasticdepth import (stochastic_depth_resnet18,
 from .vgg import *
 from .xception import *
 from .xception import xception
+from .ConvNeXt import * 

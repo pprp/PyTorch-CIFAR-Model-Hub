@@ -8,4 +8,5 @@ from .registry import *
 from .spp_depth import *
 from .toymodel import *
 from .vit import *
-from .nas import * 
+from .nas import *
+from .autorf import build_auto_network

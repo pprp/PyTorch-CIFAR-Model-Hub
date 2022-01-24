@@ -14,7 +14,7 @@ def str2bool(v):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model", default="wideresnet", help="select model")
+    parser.add_argument("--model", default="resnet20", help="select model")
 
     parser.add_argument(
         "--name", default="gpu0", help="experiment name: (default: cifar10_ricap)"
@@ -43,7 +43,7 @@ def parse_args():
     parser.add_argument("--half", default=False, type=bool, help="use AMP by hand")
 
     ########### CONTROLER ########################
-
+    parser.add_argument("--geno", default="SPP1", help="genotype name")
     parser.add_argument("--epochs", default=200, type=int)
     parser.add_argument("--lr", "--learning-rate", default=1e-1, type=float)
     parser.add_argument(

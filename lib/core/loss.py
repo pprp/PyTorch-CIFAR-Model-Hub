@@ -89,7 +89,7 @@ def build_criterion(args):
     if args.crit == "ce":
         criterion = nn.CrossEntropyLoss()
     elif args.crit == "lsr":
-        criterion = LSR()
+        criterion = LSR(e=0.2)
     else:
         raise "Not Implemented."
     return criterion

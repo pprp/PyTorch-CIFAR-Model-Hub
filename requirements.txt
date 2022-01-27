@@ -6,3 +6,11 @@ einops
 torchsummary
 hyperbox
 thop
+#  conda install cupy pkg-config compilers libjpeg-turbo opencv numba
+# python setup.py build 
+# python setup.py install 
+
+#  pkg-config --cflags --libs opencv
+#  pkg-config --cflags --libs libturbojpeg
+#  extension_kwargs = pkgconfig('opencv4', extension_kwargs)
+#  extension_kwargs = pkgconfig('opencv', extension_kwargs)

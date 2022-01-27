@@ -40,7 +40,7 @@ def parse_args():
     )
     parser.add_argument("--bs", default=128, type=int, help="use RICAP")
     parser.add_argument("--nw", default=4, type=int, help="use RICAP")
-    parser.add_argument("--half", default=False, type=bool, help="use AMP by hand")
+    parser.add_argument("--half", default=True, type=bool, help="use AMP by hand")
 
     ########### CONTROLER ########################
     parser.add_argument("--geno", default="SPP1", help="genotype name")

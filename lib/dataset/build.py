@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from .transforms import build_transforms
 
 
-def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=True):
+def build_dataset(type="train", name="cifar10", root="~/data", args=None, fast=False):
     assert name in ["cifar10", "cifar100"]
     assert type in ["train", "val"]
 

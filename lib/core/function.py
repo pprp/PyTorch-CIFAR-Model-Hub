@@ -32,7 +32,6 @@ def train_one_epoch(
 
     for i, (input, target) in enumerate(train_loader):
         optimizer.zero_grad()
-
         # if i % 5 == 0:
         #     mutator.reset() 
 

@@ -9,7 +9,7 @@ import numpy as np
 from torch.autograd import Variable
 from PIL import Image
 from torchvision import transforms
-from Smodules import *
+from lib.utils.Smodules import *
 
 class RFBFeature(nn.Module):
     def __init__(self):

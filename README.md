@@ -2,7 +2,7 @@
 
 ![](figures/logo.png)
 
-CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，正则化方法等，并进行了实现。如果有所补充，可以提issue或者进行PR。
+CIFAR10数据集上CNN模型、Transformer模型以及Tricks，数据增强，正则化方法等，并进行了实现。欢迎提issue或者进行PR。
 
 ## 0. Requirements
 
@@ -33,7 +33,6 @@ vision Transformer:
 | cvt                | 2593M   | 94.64      | 84.74    | 75       |
 | swin_t             | 3927M   | 93.24      | 86.09    | 104      |
 | swin_s             | 6707M   | 90.27      | 83.68    | 184      |
-| cct_7_3x1_32       | 7847M   |            |          |          |
 
 
 
@@ -86,6 +85,8 @@ WideResNet28-10 +Mixup on CIFAR-10:
 ```
 python train.py --dataset cifar10 --mixup True
 ```
+
+更多脚本可以参考 scripts/run.sh 
 
 ## 3. Results
 

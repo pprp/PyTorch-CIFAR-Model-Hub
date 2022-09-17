@@ -28,7 +28,7 @@ def parse_args():
         default='lib/config/default.yaml',
     )
 
-    ########### DATASET PART #####################
+    # DATASET PART
     parser.add_argument(
         '--dataset',
         default='cifar10',
@@ -47,7 +47,7 @@ def parse_args():
                         type=bool,
                         help='use AMP by hand')
 
-    ########### CONTROLER ########################
+    # CONTROLER
     parser.add_argument('--geno', default='SPP1', help='genotype name')
     parser.add_argument('--epochs', default=200, type=int)
     parser.add_argument('--lr', '--learning-rate', default=1e-1, type=float)
@@ -82,7 +82,7 @@ def parse_args():
                         default=2.0,
                         type=float,
                         help='gradient clip parameter')
-    ############# AUGMENTATION ####################
+    # AUGMENTATION
     # AUGMENTATION: ricap
     parser.add_argument('--ricap',
                         default=False,

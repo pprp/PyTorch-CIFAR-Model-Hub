@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchsummary
-from einops import rearrange, repeat
+from einops import rearrange
 from einops.layers.torch import Rearrange
-from torch import einsum, nn
+from torch import einsum
 
 
 class Residual(nn.Module):

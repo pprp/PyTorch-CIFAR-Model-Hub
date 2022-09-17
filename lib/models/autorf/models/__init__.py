@@ -1,8 +1,6 @@
-from lib.models.autorf import genotypes
-
-from ..genotypes import *
-from ..operations import *
-from ..spaces import *
+from ..genotypes import *  # noqa: F401, F403
+from ..operations import *  # noqa: F401, F403
+from ..spaces import *  # noqa: F401, F403
 from .resnet20 import rf_resnet20
 
 MODEL_LIST = {

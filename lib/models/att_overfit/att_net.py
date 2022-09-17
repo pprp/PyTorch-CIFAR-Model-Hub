@@ -260,14 +260,6 @@ def cbam_resnext29_16x32d(num_classes):
                        use_att=True)
 
 
-def cbam_resnext29_16x64d(num_classes):
-    return CBAMResNeXt(cardinality=16,
-                       depth=29,
-                       num_classes=num_classes,
-                       base_width=64,
-                       use_att=True)
-
-
 def norm_resnext29_16x8d(num_classes):
     return CBAMResNeXt(cardinality=16,
                        depth=29,

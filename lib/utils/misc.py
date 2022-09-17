@@ -2,7 +2,7 @@ import copy
 import datetime
 import random
 import time
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from functools import singledispatch
 
 import numpy as np

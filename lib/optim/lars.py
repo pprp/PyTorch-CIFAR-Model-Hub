@@ -3,8 +3,6 @@ https://github.com/FlyEgle/MAE-pytorch/blob/master/utils/LARS.py
 """
 
 import torch
-from torch import nn
-from torch.nn.parameter import Parameter
 
 
 class LARC(object):

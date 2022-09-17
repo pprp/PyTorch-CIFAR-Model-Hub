@@ -1,7 +1,6 @@
 '''GoogLeNet with PyTorch.'''
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ..registry import register_model
 

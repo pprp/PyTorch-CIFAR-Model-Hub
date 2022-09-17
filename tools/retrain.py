@@ -7,7 +7,6 @@ import os.path as osp
 import random
 import sys
 import time
-from collections import OrderedDict
 
 import _init_paths
 import pandas as pd
@@ -15,7 +14,6 @@ import torch
 import torch.backends.cudnn as cudnn
 import yaml
 from thop import profile
-from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
 
 from lib.core.function import train_one_epoch, validate

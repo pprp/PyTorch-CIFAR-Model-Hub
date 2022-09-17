@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import nn
 from torch.autograd import Variable
 
 
@@ -299,15 +298,17 @@ class DeformConv2D(nn.Module):
         # Change offset's order from [x1, x2, ..., y1, y2, ...] to [x1, y1, x2, y2, ...]
         # Codes below are written to make sure same results of MXNet implementation.
         # You can remove them, and it won't influence the module's performance.
-        offsets_index = Variable(torch.cat(
-            [torch.arange(0, 2 * N, 2),
-             torch.arange(1, 2 * N + 1, 2)]),
-                                 requires_grad=False).type_as(x).long()
+        offsets_index = (Variable(
+            torch.cat(
+                [torch.arange(0, 2 * N, 2),
+                 torch.arange(1, 2 * N + 1, 2)]),
+            requires_grad=False,
+        ).type_as(x).long())
 
         print('offset index shape: ', offsets_index.shape)
         print(offset.shape)
-        offsets_index = offsets_index.unsqueeze(dim=0).unsqueeze(
-            dim=-1).unsqueeze(dim=-1).expand(*offset.size())
+        offsets_index = (offsets_index.unsqueeze(dim=0).unsqueeze(
+            dim=-1).unsqueeze(dim=-1).expand(*offset.size()))
         offset = torch.gather(offset, dim=1, index=offsets_index)
         # ------------------------------------------------------------------------
 
@@ -322,41 +323,49 @@ class DeformConv2D(nn.Module):
         q_lt = Variable(p.data, requires_grad=False).floor()
         q_rb = q_lt + 1
 
-        q_lt = torch.cat([
-            torch.clamp(q_lt[..., :N], 0,
-                        x.size(2) - 1),
-            torch.clamp(q_lt[..., N:], 0,
-                        x.size(3) - 1)
-        ],
-                         dim=-1).long()
-        q_rb = torch.cat([
-            torch.clamp(q_rb[..., :N], 0,
-                        x.size(2) - 1),
-            torch.clamp(q_rb[..., N:], 0,
-                        x.size(3) - 1)
-        ],
-                         dim=-1).long()
+        q_lt = torch.cat(
+            [
+                torch.clamp(q_lt[..., :N], 0,
+                            x.size(2) - 1),
+                torch.clamp(q_lt[..., N:], 0,
+                            x.size(3) - 1),
+            ],
+            dim=-1,
+        ).long()
+        q_rb = torch.cat(
+            [
+                torch.clamp(q_rb[..., :N], 0,
+                            x.size(2) - 1),
+                torch.clamp(q_rb[..., N:], 0,
+                            x.size(3) - 1),
+            ],
+            dim=-1,
+        ).long()
         q_lb = torch.cat([q_lt[..., :N], q_rb[..., N:]], -1)
         q_rt = torch.cat([q_rb[..., :N], q_lt[..., N:]], -1)
 
         # (b, h, w, N)
-        mask = torch.cat([
-            p[..., :N].lt(self.padding) +
-            p[..., :N].gt(x.size(2) - 1 - self.padding),
-            p[..., N:].lt(self.padding) +
-            p[..., N:].gt(x.size(3) - 1 - self.padding)
-        ],
-                         dim=-1).type_as(p)
+        mask = torch.cat(
+            [
+                p[..., :N].lt(self.padding) +
+                p[..., :N].gt(x.size(2) - 1 - self.padding),
+                p[..., N:].lt(self.padding) +
+                p[..., N:].gt(x.size(3) - 1 - self.padding),
+            ],
+            dim=-1,
+        ).type_as(p)
         mask = mask.detach()
         floor_p = p - (p - torch.floor(p))
         p = p * (1 - mask) + floor_p * mask
-        p = torch.cat([
-            torch.clamp(p[..., :N], 0,
-                        x.size(2) - 1),
-            torch.clamp(p[..., N:], 0,
-                        x.size(3) - 1)
-        ],
-                      dim=-1)
+        p = torch.cat(
+            [
+                torch.clamp(p[..., :N], 0,
+                            x.size(2) - 1),
+                torch.clamp(p[..., N:], 0,
+                            x.size(3) - 1),
+            ],
+            dim=-1,
+        )
 
         # bilinear kernel (b, h, w, N)
         g_lt = (1 + (q_lt[..., :N].type_as(p) - p[..., :N])) * (
@@ -375,10 +384,10 @@ class DeformConv2D(nn.Module):
         x_q_rt = self._get_x_q(x, q_rt, N)
 
         # (b, c, h, w, N)
-        x_offset = g_lt.unsqueeze(dim=1) * x_q_lt + \
-                   g_rb.unsqueeze(dim=1) * x_q_rb + \
-                   g_lb.unsqueeze(dim=1) * x_q_lb + \
-                   g_rt.unsqueeze(dim=1) * x_q_rt
+        x_offset = (g_lt.unsqueeze(dim=1) * x_q_lt +
+                    g_rb.unsqueeze(dim=1) * x_q_rb +
+                    g_lb.unsqueeze(dim=1) * x_q_lb +
+                    g_rt.unsqueeze(dim=1) * x_q_rt)
 
         x_offset = self._reshape_x_offset(x_offset, ks)
         out = self.conv_kernel(x_offset)
@@ -386,11 +395,13 @@ class DeformConv2D(nn.Module):
         return out
 
     def _get_p_n(self, N, dtype):
-        p_n_x, p_n_y = np.meshgrid(range(-(self.kernel_size - 1) // 2,
-                                         (self.kernel_size - 1) // 2 + 1),
-                                   range(-(self.kernel_size - 1) // 2,
-                                         (self.kernel_size - 1) // 2 + 1),
-                                   indexing='ij')
+        p_n_x, p_n_y = np.meshgrid(
+            range(-(self.kernel_size - 1) // 2,
+                  (self.kernel_size - 1) // 2 + 1),
+            range(-(self.kernel_size - 1) // 2,
+                  (self.kernel_size - 1) // 2 + 1),
+            indexing='ij',
+        )
         # (2N, 1)
         p_n = np.concatenate((p_n_x.flatten(), p_n_y.flatten()))
         p_n = np.reshape(p_n, (1, 2 * N, 1, 1))
@@ -430,8 +441,8 @@ class DeformConv2D(nn.Module):
         # (b, h, w, N)
         index = q[..., :N] * padded_w + q[..., N:]  # offset_x*w + offset_y
         # (b, c, h*w*N)
-        index = index.contiguous().unsqueeze(dim=1).expand(
-            -1, c, -1, -1, -1).contiguous().view(b, c, -1)
+        index = (index.contiguous().unsqueeze(dim=1).expand(
+            -1, c, -1, -1, -1).contiguous().view(b, c, -1))
 
         x_offset = x.gather(dim=-1,
                             index=index).contiguous().view(b, c, h, w, N)
@@ -441,11 +452,13 @@ class DeformConv2D(nn.Module):
     @staticmethod
     def _reshape_x_offset(x_offset, ks):
         b, c, h, w, N = x_offset.size()
-        x_offset = torch.cat([
-            x_offset[..., s:s + ks].contiguous().view(b, c, h, w * ks)
-            for s in range(0, N, ks)
-        ],
-                             dim=-1)
+        x_offset = torch.cat(
+            [
+                x_offset[..., s:s + ks].contiguous().view(b, c, h, w * ks)
+                for s in range(0, N, ks)
+            ],
+            dim=-1,
+        )
         x_offset = x_offset.contiguous().view(b, c, h * ks, w * ks)
 
         return x_offset
@@ -467,15 +480,15 @@ class DeformNet(nn.Module):
         super(DeformNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(32)
-        self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2),
+        self.pool1 = (nn.AvgPool2d(kernel_size=2, stride=2), )
 
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm2d(64)
-        self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2),
+        self.pool2 = (nn.AvgPool2d(kernel_size=2, stride=2), )
 
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.bn3 = nn.BatchNorm2d(128)
-        self.pool3 = nn.AvgPool2d(kernel_size=2, stride=2),
+        self.pool3 = (nn.AvgPool2d(kernel_size=2, stride=2), )
 
         self.offsets = nn.Conv2d(128, 18, kernel_size=3, padding=1)
         self.conv4 = DeformConv2D(128, 128, kernel_size=3, padding=1)

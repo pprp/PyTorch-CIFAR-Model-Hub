@@ -2,14 +2,9 @@ from collections import namedtuple
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-from torch.utils.model_zoo import load_url as load_state_dict_from_url
-from torchvision.models import ResNet
 
-from ..attention_structure import *
-from ..operations import *
-
-# from utils.utils import drop_path
+from ..attention_structure import *  # noqa: F401, F403
+from ..operations import *  # noqa: F401, F403
 
 Genotype = namedtuple('Genotype', 'normal normal_concat')
 

@@ -3,14 +3,12 @@ from typing import List
 
 import torch
 import torchvision
-from ffcv.fields import IntField, RGBImageField
 from ffcv.fields.decoders import IntDecoder, SimpleRGBImageDecoder
 from ffcv.loader import Loader, OrderOption
 from ffcv.pipeline.operation import Operation
 from ffcv.transforms import (Convert, Cutout, RandomHorizontalFlip,
                              RandomTranslate, ToDevice, ToTensor, ToTorchImage)
 from ffcv.transforms.common import Squeeze
-from ffcv.writer import DatasetWriter
 
 
 def make_dataloaders(train_dataset=None,

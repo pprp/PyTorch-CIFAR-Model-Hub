@@ -1,6 +1,5 @@
 import torch
-import torch.nn.functional as F
-from einops import rearrange, repeat
+from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch import einsum, nn
 
@@ -25,9 +24,6 @@ def group_by_key_prefix_and_remove_prefix(prefix, d):
         map(lambda x: (x[0][len(prefix):], x[1]),
             tuple(kwargs_with_prefix.items())))
     return kwargs_without_prefix, kwargs
-
-
-# classes
 
 
 class LayerNorm(nn.Module):  # layernorm, but done in the channel dimension #1

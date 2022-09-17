@@ -1,10 +1,7 @@
 import csv
 import glob
 import itertools
-import os
 import random
-import re
-import shutil
 
 import matplotlib.pyplot as plt
 """

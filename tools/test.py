@@ -12,7 +12,7 @@ from lib.core.function import validate
 from lib.dataset import build_dataloader
 from lib.models.build import build_model
 from lib.utils.args import parse_args
-from lib.utils.utils import *
+from lib.utils.utils import *  # noqa: F401, F403
 
 
 def main():

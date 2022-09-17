@@ -15,16 +15,10 @@ from core.evaluate import accuracy
 
 
 def train_one_epoch(
-    args, train_loader, model, criterion, optimizer, epoch, scheduler=None, writer=None, mutator=None,
+    args, train_loader, model, criterion, optimizer, epoch, scheduler=None, writer=None, 
 ):
     losses = AverageMeter()
     scores = AverageMeter()
-    
-    if mutator is not None: 
-        mutator.eval() 
-        mutator.reset() 
-        mutator_export = mutator._cache
-        # print("export things: ", mutator_export)
 
     model.train()
     if args.half:
@@ -32,8 +26,6 @@ def train_one_epoch(
 
     for i, (input, target) in enumerate(train_loader):
         optimizer.zero_grad()
-        # if i % 5 == 0:
-        #     mutator.reset() 
 
         if args.ricap:
             I_x, I_y = input.size()[2:]
@@ -166,7 +158,7 @@ def train_one_epoch(
 
 
 @torch.no_grad()
-def validate(args, val_loader, model, criterion, epoch, writer, mutator=None):
+def validate(args, val_loader, model, criterion, epoch, writer):
     losses = AverageMeter()
     scores = AverageMeter()
 

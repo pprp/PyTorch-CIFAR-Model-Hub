@@ -21,15 +21,12 @@ from lib.core.loss import build_criterion
 from lib.dataset import build_dataloader
 from lib.models import build_auto_network
 from lib.optim import build_optimizer
-from lib.mutator import build_mutator
 from lib.scheduler import build_scheduler
 from lib.utils.args import parse_args
 from lib.utils.misc import Timer, build_expname
 from lib.utils.utils import *
 from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
-
-USE_HYPERBOX = False
 
 def main():
     cudnn.benchmark = True
@@ -87,7 +84,6 @@ def main():
 
     # create model
     model = build_auto_network(args.model, num_classes=10, genotype=eval(args.geno))
-    mutator = None
     logging.info(f"param of model {args.model} is {count_params(model)}")
   
 
@@ -127,7 +123,6 @@ def main():
             epoch,
             scheduler=scheduler,
             writer=writer,
-            mutator=mutator,
         )
 
         train_time = timer()

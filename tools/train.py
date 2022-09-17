@@ -4,10 +4,8 @@ import argparse
 import logging
 import os
 import random 
-import os.path as osp
 import sys
 import time
-from collections import OrderedDict
 
 import pandas as pd
 import torch
@@ -20,15 +18,12 @@ from lib.core.loss import build_criterion
 from lib.dataset import build_dataloader
 from lib.models import build_model
 from lib.optim import build_optimizer
-from lib.mutator import build_mutator
 from lib.scheduler import build_scheduler
 from lib.utils.args import parse_args
 from lib.utils.misc import Timer, build_expname
 from lib.utils.utils import *
 from torch.cuda.amp import autocast as autocast
 from torch.utils.tensorboard import SummaryWriter
-
-USE_HYPERBOX = True
 
 
 def main():
@@ -86,13 +81,9 @@ def main():
     test_loader = build_dataloader(args.dataset, type="val", args=args)
 
     # create model
-    if not USE_HYPERBOX:
-        model = build_model(args.model, num_classes=10)
-        mutator = None
-        logging.info(f"param of model {args.model} is {count_params(model)}")
-    else:
-        model = build_model(args.model, num_classes=10)
-        mutator = build_mutator("random", model)
+    model = build_model(args.model, num_classes=10)
+    logging.info(f"param of model {args.model} is {count_params(model)}")
+
 
     # stat(model, (3, 32, 32))
     # from torchsummary import summary
@@ -125,7 +116,6 @@ def main():
             epoch,
             scheduler=scheduler,
             writer=writer,
-            mutator=mutator,
         )
 
         train_time = timer()

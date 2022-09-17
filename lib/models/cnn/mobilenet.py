@@ -6,14 +6,14 @@ for more details.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
-__all__ = ["MobileNet"]
+__all__ = ['MobileNet']
 
 
 class Block(nn.Module):
     """Depthwise conv + Pointwise conv"""
-
     def __init__(self, in_planes, out_planes, stride=1):
         super(Block, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -26,9 +26,12 @@ class Block(nn.Module):
             bias=False,
         )
         self.bn1 = nn.BatchNorm2d(in_planes)
-        self.conv2 = nn.Conv2d(
-            in_planes, out_planes, kernel_size=1, stride=1, padding=0, bias=False
-        )
+        self.conv2 = nn.Conv2d(in_planes,
+                               out_planes,
+                               kernel_size=1,
+                               stride=1,
+                               padding=0,
+                               bias=False)
         self.bn2 = nn.BatchNorm2d(out_planes)
 
     def forward(self, x):
@@ -57,7 +60,12 @@ class MobileNet(nn.Module):
 
     def __init__(self, num_classes=10):
         super(MobileNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3,
+                               32,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(32)
         self.layers = self._make_layers(in_planes=32)
         self.linear = nn.Linear(1024, num_classes)

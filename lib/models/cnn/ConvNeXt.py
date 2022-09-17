@@ -5,15 +5,14 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..registry import register_model
 # from timm.models.layers import trunc_normal_, DropPath
 # from timm.models.registry import register_model
 from ..vit.utils.utils import *
-from ..registry import register_model
 
 
 class Block(nn.Module):
@@ -27,24 +26,21 @@ class Block(nn.Module):
         drop_path (float): Stochastic depth rate. Default: 0.0
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
     """
-
     def __init__(self, dim, drop_path=0.0, layer_scale_init_value=1e-6):
         super().__init__()
-        self.dwconv = nn.Conv2d(
-            dim, dim, kernel_size=7, padding=3, groups=dim
-        )  # depthwise conv
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=7, padding=3,
+                                groups=dim)  # depthwise conv
         self.norm = LayerNorm(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(
-            dim, 4 * dim
-        )  # pointwise/1x1 convs, implemented with linear layers
+            dim,
+            4 * dim)  # pointwise/1x1 convs, implemented with linear layers
         self.act = nn.GELU()
         self.pwconv2 = nn.Linear(4 * dim, dim)
-        self.gamma = (
-            nn.Parameter(layer_scale_init_value * torch.ones((dim)), requires_grad=True)
-            if layer_scale_init_value > 0
-            else None
-        )
-        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
+        self.gamma = (nn.Parameter(layer_scale_init_value * torch.ones((dim)),
+                                   requires_grad=True)
+                      if layer_scale_init_value > 0 else None)
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0.0 else nn.Identity()
 
     def forward(self, x):
         input = x
@@ -75,7 +71,6 @@ class ConvNeXt(nn.Module):
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
         head_init_scale (float): Init scaling value for classifier weights and biases. Default: 1.
     """
-
     def __init__(
         self,
         in_chans=3,
@@ -94,12 +89,12 @@ class ConvNeXt(nn.Module):
         stem = nn.Sequential(
             # nn.Conv2d(in_chans, dims[0], kernel_size=4, stride=4),
             nn.Conv2d(in_chans, dims[0], kernel_size=2, stride=2),
-            LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
+            LayerNorm(dims[0], eps=1e-6, data_format='channels_first'),
         )
         self.downsample_layers.append(stem)
         for i in range(3):
             downsample_layer = nn.Sequential(
-                LayerNorm(dims[i], eps=1e-6, data_format="channels_first"),
+                LayerNorm(dims[i], eps=1e-6, data_format='channels_first'),
                 nn.Conv2d(dims[i], dims[i + 1], kernel_size=2, stride=2),
             )
             self.downsample_layers.append(downsample_layer)
@@ -107,19 +102,18 @@ class ConvNeXt(nn.Module):
         self.stages = (
             nn.ModuleList()
         )  # 4 feature resolution stages, each consisting of multiple residual blocks
-        dp_rates = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]
+        dp_rates = [
+            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
+        ]
         cur = 0
         for i in range(4):
-            stage = nn.Sequential(
-                *[
-                    Block(
-                        dim=dims[i],
-                        drop_path=dp_rates[cur + j],
-                        layer_scale_init_value=layer_scale_init_value,
-                    )
-                    for j in range(depths[i])
-                ]
-            )
+            stage = nn.Sequential(*[
+                Block(
+                    dim=dims[i],
+                    drop_path=dp_rates[cur + j],
+                    layer_scale_init_value=layer_scale_init_value,
+                ) for j in range(depths[i])
+            ])
             self.stages.append(stage)
             cur += depths[i]
 
@@ -139,9 +133,8 @@ class ConvNeXt(nn.Module):
         for i in range(4):
             x = self.downsample_layers[i](x)
             x = self.stages[i](x)
-        return self.norm(
-            x.mean([-2, -1])
-        )  # global average pooling, (N, C, H, W) -> (N, C)
+        return self.norm(x.mean(
+            [-2, -1]))  # global average pooling, (N, C, H, W) -> (N, C)
 
     def forward(self, x):
         x = self.forward_features(x)
@@ -155,23 +148,24 @@ class LayerNorm(nn.Module):
     shape (batch_size, height, width, channels) while channels_first corresponds to inputs
     with shape (batch_size, channels, height, width).
     """
-
-    def __init__(self, normalized_shape, eps=1e-6, data_format="channels_last"):
+    def __init__(self,
+                 normalized_shape,
+                 eps=1e-6,
+                 data_format='channels_last'):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
         self.eps = eps
         self.data_format = data_format
-        if self.data_format not in ["channels_last", "channels_first"]:
+        if self.data_format not in ['channels_last', 'channels_first']:
             raise NotImplementedError
-        self.normalized_shape = (normalized_shape,)
+        self.normalized_shape = (normalized_shape, )
 
     def forward(self, x):
-        if self.data_format == "channels_last":
-            return F.layer_norm(
-                x, self.normalized_shape, self.weight, self.bias, self.eps
-            )
-        elif self.data_format == "channels_first":
+        if self.data_format == 'channels_last':
+            return F.layer_norm(x, self.normalized_shape, self.weight,
+                                self.bias, self.eps)
+        elif self.data_format == 'channels_first':
             u = x.mean(1, keepdim=True)
             s = (x - u).pow(2).mean(1, keepdim=True)
             x = (x - u) / torch.sqrt(s + self.eps)
@@ -180,13 +174,20 @@ class LayerNorm(nn.Module):
 
 
 model_urls = {
-    "convnext_tiny_1k": "https://dl.fbaipublicfiles.com/convnext/convnext_tiny_1k_224_ema.pth",
-    "convnext_small_1k": "https://dl.fbaipublicfiles.com/convnext/convnext_small_1k_224_ema.pth",
-    "convnext_base_1k": "https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_224_ema.pth",
-    "convnext_large_1k": "https://dl.fbaipublicfiles.com/convnext/convnext_large_1k_224_ema.pth",
-    "convnext_base_22k": "https://dl.fbaipublicfiles.com/convnext/convnext_base_22k_224.pth",
-    "convnext_large_22k": "https://dl.fbaipublicfiles.com/convnext/convnext_large_22k_224.pth",
-    "convnext_xlarge_22k": "https://dl.fbaipublicfiles.com/convnext/convnext_xlarge_22k_224.pth",
+    'convnext_tiny_1k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_tiny_1k_224_ema.pth',
+    'convnext_small_1k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_small_1k_224_ema.pth',
+    'convnext_base_1k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_224_ema.pth',
+    'convnext_large_1k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_large_1k_224_ema.pth',
+    'convnext_base_22k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_base_22k_224.pth',
+    'convnext_large_22k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_large_22k_224.pth',
+    'convnext_xlarge_22k':
+    'https://dl.fbaipublicfiles.com/convnext/convnext_xlarge_22k_224.pth',
 }
 
 
@@ -195,11 +196,11 @@ def convnext_tiny(pretrained=False, **kwargs):
     # model = ConvNeXt(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768], **kwargs)
     model = ConvNeXt(depths=[3, 3, 9, 3], dims=[48, 86, 192, 384], **kwargs)
     if pretrained:
-        url = model_urls["convnext_tiny_1k"]
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url=url, map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        url = model_urls['convnext_tiny_1k']
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,
+                                                        map_location='cpu',
+                                                        check_hash=True)
+        model.load_state_dict(checkpoint['model'])
     return model
 
 
@@ -207,57 +208,54 @@ def convnext_tiny(pretrained=False, **kwargs):
 def convnext_small(pretrained=False, **kwargs):
     model = ConvNeXt(depths=[3, 3, 27, 3], dims=[96, 192, 384, 768], **kwargs)
     if pretrained:
-        url = model_urls["convnext_small_1k"]
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url=url, map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        url = model_urls['convnext_small_1k']
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,
+                                                        map_location='cpu',
+                                                        check_hash=True)
+        model.load_state_dict(checkpoint['model'])
     return model
 
 
 @register_model
 def convnext_base(pretrained=False, in_22k=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3],
+                     dims=[128, 256, 512, 1024],
+                     **kwargs)
     if pretrained:
-        url = (
-            model_urls["convnext_base_22k"]
-            if in_22k
-            else model_urls["convnext_base_1k"]
-        )
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url=url, map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        url = (model_urls['convnext_base_22k']
+               if in_22k else model_urls['convnext_base_1k'])
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,
+                                                        map_location='cpu',
+                                                        check_hash=True)
+        model.load_state_dict(checkpoint['model'])
     return model
 
 
 @register_model
 def convnext_large(pretrained=False, in_22k=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3],
+                     dims=[192, 384, 768, 1536],
+                     **kwargs)
     if pretrained:
-        url = (
-            model_urls["convnext_large_22k"]
-            if in_22k
-            else model_urls["convnext_large_1k"]
-        )
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url=url, map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        url = (model_urls['convnext_large_22k']
+               if in_22k else model_urls['convnext_large_1k'])
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,
+                                                        map_location='cpu',
+                                                        check_hash=True)
+        model.load_state_dict(checkpoint['model'])
     return model
 
 
 @register_model
 def convnext_xlarge(pretrained=False, in_22k=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[256, 512, 1024, 2048], **kwargs)
+    model = ConvNeXt(depths=[3, 3, 27, 3],
+                     dims=[256, 512, 1024, 2048],
+                     **kwargs)
     if pretrained:
-        url = (
-            model_urls["convnext_xlarge_22k"]
-            if in_22k
-            else model_urls["convnext_xlarge_1k"]
-        )
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url=url, map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
+        url = (model_urls['convnext_xlarge_22k']
+               if in_22k else model_urls['convnext_xlarge_1k'])
+        checkpoint = torch.hub.load_state_dict_from_url(url=url,
+                                                        map_location='cpu',
+                                                        check_hash=True)
+        model.load_state_dict(checkpoint['model'])
     return model

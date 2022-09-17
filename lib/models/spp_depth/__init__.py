@@ -1,1 +1,1 @@
-from .spp_resnet import * 
+from .spp_resnet import *

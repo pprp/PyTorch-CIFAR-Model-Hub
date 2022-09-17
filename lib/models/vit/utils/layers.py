@@ -2,13 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchsummary
-
-import torch
-from torch import nn, einsum
-import torch.nn.functional as F
-
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
+from torch import einsum, nn
 
 
 class Residual(nn.Module):
@@ -52,27 +48,25 @@ class Attention(nn.Module):
         project_out = not (heads == 1 and dim_head == dim)
 
         self.heads = heads
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
 
         self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
 
-        self.to_out = (
-            nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout))
-            if project_out
-            else nn.Identity()
-        )
+        self.to_out = (nn.Sequential(nn.Linear(inner_dim, dim),
+                                     nn.Dropout(dropout))
+                       if project_out else nn.Identity())
 
     def forward(self, x):
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim=-1)
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=h), qkv)
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), qkv)
 
-        dots = einsum("b h i d, b h j d -> b h i j", q, k) * self.scale
+        dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
 
         attn = dots.softmax(dim=-1)
 
-        out = einsum("b h i j, b h j d -> b h i d", attn, v)
-        out = rearrange(out, "b h n d -> b n (h d)")
+        out = einsum('b h i j, b h j d -> b h i d', attn, v)
+        out = rearrange(out, 'b h n d -> b n (h d)')
         out = self.to_out(out)
         return out
 
@@ -82,39 +76,40 @@ class ReAttention(nn.Module):
         super().__init__()
         inner_dim = dim_head * heads
         self.heads = heads
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
 
         self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
 
         self.reattn_weights = nn.Parameter(torch.randn(heads, heads))
 
         self.reattn_norm = nn.Sequential(
-            Rearrange("b h i j -> b i j h"),
+            Rearrange('b h i j -> b i j h'),
             nn.LayerNorm(heads),
-            Rearrange("b i j h -> b h i j"),
+            Rearrange('b i j h -> b h i j'),
         )
 
-        self.to_out = nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout))
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, dim),
+                                    nn.Dropout(dropout))
 
     def forward(self, x):
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim=-1)
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=h), qkv)
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), qkv)
 
         # attention
 
-        dots = einsum("b h i d, b h j d -> b h i j", q, k) * self.scale
+        dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
         attn = dots.softmax(dim=-1)
 
         # re-attention
 
-        attn = einsum("b h i j, h g -> b g i j", attn, self.reattn_weights)
+        attn = einsum('b h i j, h g -> b g i j', attn, self.reattn_weights)
         attn = self.reattn_norm(attn)
 
         # aggregate and out
 
-        out = einsum("b h i j, b h j d -> b h i d", attn, v)
-        out = rearrange(out, "b h n d -> b n (h d)")
+        out = einsum('b h i j, b h j d -> b h i d', attn, v)
+        out = rearrange(out, 'b h n d -> b n (h d)')
         out = self.to_out(out)
         return out
 
@@ -126,10 +121,10 @@ class LeFF(nn.Module):
         scale_dim = dim * scale
         self.up_proj = nn.Sequential(
             nn.Linear(dim, scale_dim),
-            Rearrange("b n c -> b c n"),
+            Rearrange('b n c -> b c n'),
             nn.BatchNorm1d(scale_dim),
             nn.GELU(),
-            Rearrange("b c (h w) -> b c h w", h=2, w=2),
+            Rearrange('b c (h w) -> b c h w', h=2, w=2),
         )
 
         self.depth_conv = nn.Sequential(
@@ -143,15 +138,15 @@ class LeFF(nn.Module):
             ),
             nn.BatchNorm2d(scale_dim),
             nn.GELU(),
-            Rearrange("b c h w -> b (h w) c", h=2, w=2),
+            Rearrange('b c h w -> b (h w) c', h=2, w=2),
         )
 
         self.down_proj = nn.Sequential(
             nn.Linear(scale_dim, dim),
-            Rearrange("b n c -> b c n"),
+            Rearrange('b n c -> b c n'),
             nn.BatchNorm1d(dim),
             nn.GELU(),
-            Rearrange("b c n -> b n c"),
+            Rearrange('b c n -> b n c'),
         )
 
     def forward(self, x):
@@ -168,36 +163,36 @@ class LCAttention(nn.Module):
         project_out = not (heads == 1 and dim_head == dim)
 
         self.heads = heads
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
 
         self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
 
-        self.to_out = (
-            nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout))
-            if project_out
-            else nn.Identity()
-        )
+        self.to_out = (nn.Sequential(nn.Linear(inner_dim, dim),
+                                     nn.Dropout(dropout))
+                       if project_out else nn.Identity())
 
     def forward(self, x):
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim=-1)
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=h), qkv)
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), qkv)
         q = q[:, :, -1, :].unsqueeze(2)  # Only Lth element use as query
 
-        dots = einsum("b h i d, b h j d -> b h i j", q, k) * self.scale
+        dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
 
         attn = dots.softmax(dim=-1)
 
-        out = einsum("b h i j, b h j d -> b h i d", attn, v)
-        out = rearrange(out, "b h n d -> b n (h d)")
+        out = einsum('b h i j, b h j d -> b h i d', attn, v)
+        out = rearrange(out, 'b h n d -> b n (h d)')
         out = self.to_out(out)
         return out
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(
-        self, feats: int, mlp_hidden: int, head: int = 8, dropout: float = 0.0
-    ):
+    def __init__(self,
+                 feats: int,
+                 mlp_hidden: int,
+                 head: int = 8,
+                 dropout: float = 0.0):
         super(TransformerEncoder, self).__init__()
         self.la1 = nn.LayerNorm(feats)
         self.msa = MultiHeadSelfAttention(feats, head=head, dropout=dropout)
@@ -222,7 +217,7 @@ class MultiHeadSelfAttention(nn.Module):
         super(MultiHeadSelfAttention, self).__init__()
         self.head = head
         self.feats = feats
-        self.sqrt_d = self.feats ** 0.5
+        self.sqrt_d = self.feats**0.5
 
         self.q = nn.Linear(feats, feats)
         self.k = nn.Linear(feats, feats)
@@ -233,19 +228,21 @@ class MultiHeadSelfAttention(nn.Module):
 
     def forward(self, x):
         b, n, f = x.size()
-        q = self.q(x).view(b, n, self.head, self.feats // self.head).transpose(1, 2)
-        k = self.k(x).view(b, n, self.head, self.feats // self.head).transpose(1, 2)
-        v = self.v(x).view(b, n, self.head, self.feats // self.head).transpose(1, 2)
+        q = self.q(x).view(b, n, self.head,
+                           self.feats // self.head).transpose(1, 2)
+        k = self.k(x).view(b, n, self.head,
+                           self.feats // self.head).transpose(1, 2)
+        v = self.v(x).view(b, n, self.head,
+                           self.feats // self.head).transpose(1, 2)
 
-        score = F.softmax(
-            torch.einsum("bhif, bhjf->bhij", q, k) / self.sqrt_d, dim=-1
-        )  # (b,h,n,n)
-        attn = torch.einsum("bhij, bhjf->bihf", score, v)  # (b,n,h,f//h)
+        score = F.softmax(torch.einsum('bhif, bhjf->bhij', q, k) / self.sqrt_d,
+                          dim=-1)  # (b,h,n,n)
+        attn = torch.einsum('bhij, bhjf->bihf', score, v)  # (b,n,h,f//h)
         o = self.dropout(self.o(attn.flatten(2)))
         return o
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     b, n, f = 4, 16, 128
     x = torch.randn(b, n, f)
     # net = MultiHeadSelfAttention(f)

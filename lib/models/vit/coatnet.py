@@ -1,19 +1,17 @@
 import torch
 import torch.nn as nn
-
 from einops import rearrange
 from einops.layers.torch import Rearrange
 
 from ..registry import register_model
 
-__all__ = ["coatnet_0", "coatnet_1", "coatnet_2", "coatnet_3", "coatnet_4"]
+__all__ = ['coatnet_0', 'coatnet_1', 'coatnet_2', 'coatnet_3', 'coatnet_4']
 
 
 def conv_3x3_bn(inp, oup, image_size, downsample=False):
-    stride = 1 if downsample == False else 2
-    return nn.Sequential(
-        nn.Conv2d(inp, oup, 3, stride, 1, bias=False), nn.BatchNorm2d(oup), nn.GELU()
-    )
+    stride = 1 if not downsample else 2
+    return nn.Sequential(nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
+                         nn.BatchNorm2d(oup), nn.GELU())
 
 
 class PreNorm(nn.Module):
@@ -63,7 +61,7 @@ class MBConv(nn.Module):
     def __init__(self, inp, oup, image_size, downsample=False, expansion=4):
         super().__init__()
         self.downsample = downsample
-        stride = 1 if self.downsample == False else 2
+        stride = 1 if not self.downsample else 2
         hidden_dim = int(inp * expansion)
 
         if self.downsample:
@@ -73,9 +71,13 @@ class MBConv(nn.Module):
         if expansion == 1:
             self.conv = nn.Sequential(
                 # dw
-                nn.Conv2d(
-                    hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False
-                ),
+                nn.Conv2d(hidden_dim,
+                          hidden_dim,
+                          3,
+                          stride,
+                          1,
+                          groups=hidden_dim,
+                          bias=False),
                 nn.BatchNorm2d(hidden_dim),
                 nn.GELU(),
                 # pw-linear
@@ -90,9 +92,13 @@ class MBConv(nn.Module):
                 nn.BatchNorm2d(hidden_dim),
                 nn.GELU(),
                 # dw
-                nn.Conv2d(
-                    hidden_dim, hidden_dim, 3, 1, 1, groups=hidden_dim, bias=False
-                ),
+                nn.Conv2d(hidden_dim,
+                          hidden_dim,
+                          3,
+                          1,
+                          1,
+                          groups=hidden_dim,
+                          bias=False),
                 nn.BatchNorm2d(hidden_dim),
                 nn.GELU(),
                 SE(inp, hidden_dim),
@@ -111,7 +117,13 @@ class MBConv(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, inp, oup, image_size, heads=8, dim_head=32, dropout=0.0):
+    def __init__(self,
+                 inp,
+                 oup,
+                 image_size,
+                 heads=8,
+                 dim_head=32,
+                 dropout=0.0):
         super().__init__()
         inner_dim = dim_head * heads
         project_out = not (heads == 1 and dim_head == inp)
@@ -119,12 +131,11 @@ class Attention(nn.Module):
         self.ih, self.iw = image_size
 
         self.heads = heads
-        self.scale = dim_head ** -0.5
+        self.scale = dim_head**-0.5
 
         # parameter table of relative position bias
         self.relative_bias_table = nn.Parameter(
-            torch.zeros((2 * self.ih - 1) * (2 * self.iw - 1), heads)
-        )
+            torch.zeros((2 * self.ih - 1) * (2 * self.iw - 1), heads))
 
         coords = torch.meshgrid((torch.arange(self.ih), torch.arange(self.iw)))
         coords = torch.flatten(torch.stack(coords), 1)
@@ -133,32 +144,30 @@ class Attention(nn.Module):
         relative_coords[0] += self.ih - 1
         relative_coords[1] += self.iw - 1
         relative_coords[0] *= 2 * self.iw - 1
-        relative_coords = rearrange(relative_coords, "c h w -> h w c")
+        relative_coords = rearrange(relative_coords, 'c h w -> h w c')
         relative_index = relative_coords.sum(-1).flatten().unsqueeze(1)
-        self.register_buffer("relative_index", relative_index)
+        self.register_buffer('relative_index', relative_index)
 
         self.attend = nn.Softmax(dim=-1)
         self.to_qkv = nn.Linear(inp, inner_dim * 3, bias=False)
 
-        self.to_out = (
-            nn.Sequential(nn.Linear(inner_dim, oup), nn.Dropout(dropout))
-            if project_out
-            else nn.Identity()
-        )
+        self.to_out = (nn.Sequential(nn.Linear(inner_dim, oup),
+                                     nn.Dropout(dropout))
+                       if project_out else nn.Identity())
 
     def forward(self, x):
         qkv = self.to_qkv(x).chunk(3, dim=-1)
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=self.heads), qkv)
+        q, k, v = map(
+            lambda t: rearrange(t, 'b n (h d) -> b h n d', h=self.heads), qkv)
 
         dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
         # Use "gather" for more efficiency on GPUs
         relative_bias = self.relative_bias_table.gather(
-            0, self.relative_index.repeat(1, self.heads)
-        )
+            0, self.relative_index.repeat(1, self.heads))
         relative_bias = rearrange(
             relative_bias,
-            "(h w) c -> 1 c h w",
+            '(h w) c -> 1 c h w',
             h=self.ih * self.iw,
             w=self.ih * self.iw,
         )
@@ -166,15 +175,20 @@ class Attention(nn.Module):
 
         attn = self.attend(dots)
         out = torch.matmul(attn, v)
-        out = rearrange(out, "b h n d -> b n (h d)")
+        out = rearrange(out, 'b h n d -> b n (h d)')
         out = self.to_out(out)
         return out
 
 
 class Transformer(nn.Module):
-    def __init__(
-        self, inp, oup, image_size, heads=8, dim_head=32, downsample=False, dropout=0.0
-    ):
+    def __init__(self,
+                 inp,
+                 oup,
+                 image_size,
+                 heads=8,
+                 dim_head=32,
+                 downsample=False,
+                 dropout=0.0):
         super().__init__()
         hidden_dim = int(inp * 4)
 
@@ -190,15 +204,15 @@ class Transformer(nn.Module):
         self.ff = FeedForward(oup, hidden_dim, dropout)
 
         self.attn = nn.Sequential(
-            Rearrange("b c ih iw -> b (ih iw) c"),
+            Rearrange('b c ih iw -> b (ih iw) c'),
             PreNorm(inp, self.attn, nn.LayerNorm),
-            Rearrange("b (ih iw) c -> b c ih iw", ih=self.ih, iw=self.iw),
+            Rearrange('b (ih iw) c -> b c ih iw', ih=self.ih, iw=self.iw),
         )
 
         self.ff = nn.Sequential(
-            Rearrange("b c ih iw -> b (ih iw) c"),
+            Rearrange('b c ih iw -> b (ih iw) c'),
             PreNorm(oup, self.ff, nn.LayerNorm),
-            Rearrange("b (ih iw) c -> b c ih iw", ih=self.ih, iw=self.iw),
+            Rearrange('b (ih iw) c -> b c ih iw', ih=self.ih, iw=self.iw),
         )
 
     def forward(self, x):
@@ -218,15 +232,14 @@ class CoAtNet(nn.Module):
         num_blocks,
         channels,
         num_classes=10,
-        block_types=["C", "C", "T", "T"],
+        block_types=['C', 'C', 'T', 'T'],
     ):
         super().__init__()
         ih, iw = image_size
-        block = {"C": MBConv, "T": Transformer}
+        block = {'C': MBConv, 'T': Transformer}
 
-        self.s0 = self._make_layer(
-            conv_3x3_bn, in_channels, channels[0], num_blocks[0], (ih // 2, iw // 2)
-        )
+        self.s0 = self._make_layer(conv_3x3_bn, in_channels, channels[0],
+                                   num_blocks[0], (ih // 2, iw // 2))
         self.s1 = self._make_layer(
             block[block_types[0]],
             channels[0],
@@ -319,7 +332,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     img = torch.randn(1, 3, 32, 32)
 
     net = coatnet_0()

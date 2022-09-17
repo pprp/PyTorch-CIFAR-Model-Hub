@@ -5,9 +5,10 @@ See the paper "Aggregated Residual Transformations for Deep Neural Networks" for
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
-__all__ = ["ResNeXt29_2x64d"]
+__all__ = ['ResNeXt29_2x64d']
 
 
 class Block(nn.Module):
@@ -15,10 +16,17 @@ class Block(nn.Module):
 
     expansion = 2
 
-    def __init__(self, in_planes, cardinality=32, bottleneck_width=4, stride=1):
+    def __init__(self,
+                 in_planes,
+                 cardinality=32,
+                 bottleneck_width=4,
+                 stride=1):
         super(Block, self).__init__()
         group_width = cardinality * bottleneck_width
-        self.conv1 = nn.Conv2d(in_planes, group_width, kernel_size=1, bias=False)
+        self.conv1 = nn.Conv2d(in_planes,
+                               group_width,
+                               kernel_size=1,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(group_width)
         self.conv2 = nn.Conv2d(
             group_width,
@@ -30,9 +38,10 @@ class Block(nn.Module):
             bias=False,
         )
         self.bn2 = nn.BatchNorm2d(group_width)
-        self.conv3 = nn.Conv2d(
-            group_width, self.expansion * group_width, kernel_size=1, bias=False
-        )
+        self.conv3 = nn.Conv2d(group_width,
+                               self.expansion * group_width,
+                               kernel_size=1,
+                               bias=False)
         self.bn3 = nn.BatchNorm2d(self.expansion * group_width)
 
         self.shortcut = nn.Sequential()
@@ -58,7 +67,11 @@ class Block(nn.Module):
 
 
 class ResNeXt(nn.Module):
-    def __init__(self, num_blocks, cardinality, bottleneck_width, num_classes=10):
+    def __init__(self,
+                 num_blocks,
+                 cardinality,
+                 bottleneck_width,
+                 num_classes=10):
         super(ResNeXt, self).__init__()
         self.cardinality = cardinality
         self.bottleneck_width = bottleneck_width
@@ -70,15 +83,16 @@ class ResNeXt(nn.Module):
         self.layer2 = self._make_layer(num_blocks[1], 2)
         self.layer3 = self._make_layer(num_blocks[2], 2)
         # self.layer4 = self._make_layer(num_blocks[3], 2)
-        self.linear = nn.Linear(cardinality * bottleneck_width * 8, num_classes)
+        self.linear = nn.Linear(cardinality * bottleneck_width * 8,
+                                num_classes)
 
     def _make_layer(self, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
             layers.append(
-                Block(self.in_planes, self.cardinality, self.bottleneck_width, stride)
-            )
+                Block(self.in_planes, self.cardinality, self.bottleneck_width,
+                      stride))
             self.in_planes = Block.expansion * self.cardinality * self.bottleneck_width
         # Increase bottleneck_width by 2 after each stage.
         self.bottleneck_width *= 2

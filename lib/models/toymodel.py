@@ -1,11 +1,12 @@
 """Toy in PyTorch."""
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
 from torch.nn.modules import padding
+
 from .registry import register_model
 
-__all__ = ["ToyNet"]
+__all__ = ['ToyNet']
 
 
 class CBR(nn.Module):
@@ -15,7 +16,10 @@ class CBR(nn.Module):
         outplane = outplane
 
         self.stem = nn.Sequential(
-            nn.Conv2d(inplane, outplane, kernel_size=kernel, padding=kernel // 2),
+            nn.Conv2d(inplane,
+                      outplane,
+                      kernel_size=kernel,
+                      padding=kernel // 2),
             nn.BatchNorm2d(outplane),
             nn.ReLU(),
         )
@@ -82,10 +86,9 @@ class ToyNet(nn.Module):
 @register_model
 def ToyNet_S(**kwargs):
     return ToyNet(**kwargs)
-    
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     input = torch.zeros(5, 3, 32, 32)
 
     model = ToyNet(scale=1, kernel=3, num_classes=10)

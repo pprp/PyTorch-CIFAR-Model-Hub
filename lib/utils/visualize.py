@@ -1,18 +1,19 @@
-import os
-import shutil
-import glob
 import csv
-import matplotlib.pyplot as plt
-import re
+import glob
 import itertools
+import os
 import random
+import re
+import shutil
+
+import matplotlib.pyplot as plt
 """
 author:pprp
 description: 可视化
 """
 
-path = "exps"
-csv_files = glob.glob("./exps/*/log.csv")
+path = 'exps'
+csv_files = glob.glob('./exps/*/log.csv')
 
 plt.title('val acc-epoch')
 plt.xlabel('epoch')
@@ -24,18 +25,18 @@ marker = itertools.cycle(
 legends = []
 
 for csv_file in csv_files:
-    name = csv_file.split("e-")[1].split("_m")[0]
-    if name.startswith("1") or name.startswith("3") or name.startswith(
-            "6") or name.startswith("8"):
+    name = csv_file.split('e-')[1].split('_m')[0]
+    if name.startswith('1') or name.startswith('3') or name.startswith(
+            '6') or name.startswith('8'):
         continue
-    if name.startswith("cbam"):
+    if name.startswith('cbam'):
         continue
 
     # print(name)
     tmp_idx = []
     tmp_tacc = []  # train acc
     tmp_vacc = []  # valid acc
-    with open(csv_file, "r") as f:
+    with open(csv_file, 'r') as f:
         reader = csv.reader(f)
         for i, line in enumerate(reader):
             if i == 0:
@@ -57,9 +58,9 @@ for csv_file in csv_files:
                  markersize=1,
                  color=current_color)
 
-    legends.append(name + "_train")
-    legends.append(name + "_val")
+    legends.append(name + '_train')
+    legends.append(name + '_val')
 
 plt.legend(legends, fontsize=6)
 
-plt.savefig("acc_epoch_analysis.png")
+plt.savefig('acc_epoch_analysis.png')

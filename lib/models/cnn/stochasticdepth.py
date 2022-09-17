@@ -8,15 +8,15 @@ resnet with stochastic depth
 """
 import torch
 import torch.nn as nn
-from torch.distributions.bernoulli import Bernoulli
+
 from ..registry import register_model
 
 __all__ = [
-    "stochastic_depth_resnet18",
-    "stochastic_depth_resnet34",
-    "stochastic_depth_resnet50",
-    "stochastic_depth_resnet101",
-    "stochastic_depth_resnet152",
+    'stochastic_depth_resnet18',
+    'stochastic_depth_resnet34',
+    'stochastic_depth_resnet50',
+    'stochastic_depth_resnet101',
+    'stochastic_depth_resnet152',
 ]
 
 
@@ -30,9 +30,11 @@ class StochasticDepthBasicBlock(torch.jit.ScriptModule):
         # self.p = torch.tensor(p).float()
         self.p = p
         self.residual = nn.Sequential(
-            nn.Conv2d(
-                in_channels, out_channels, kernel_size=3, stride=stride, padding=1
-            ),
+            nn.Conv2d(in_channels,
+                      out_channels,
+                      kernel_size=3,
+                      stride=stride,
+                      padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
             nn.Conv2d(
@@ -46,10 +48,8 @@ class StochasticDepthBasicBlock(torch.jit.ScriptModule):
 
         self.shortcut = nn.Sequential()
 
-        if (
-            stride != 1
-            or in_channels != out_channels * StochasticDepthBasicBlock.expansion
-        ):
+        if (stride != 1 or in_channels !=
+                out_channels * StochasticDepthBasicBlock.expansion):
             self.shortcut = nn.Sequential(
                 nn.Conv2d(
                     in_channels,
@@ -146,10 +146,8 @@ class StochasticDepthBottleNeck(torch.jit.ScriptModule):
 
         self.shortcut = nn.Sequential()
 
-        if (
-            stride != 1
-            or in_channels != out_channels * StochasticDepthBottleNeck.expansion
-        ):
+        if (stride != 1 or in_channels !=
+                out_channels * StochasticDepthBottleNeck.expansion):
             self.shortcut = nn.Sequential(
                 nn.Conv2d(
                     in_channels,
@@ -158,7 +156,8 @@ class StochasticDepthBottleNeck(torch.jit.ScriptModule):
                     kernel_size=1,
                     bias=False,
                 ),
-                nn.BatchNorm2d(out_channels * StochasticDepthBottleNeck.expansion),
+                nn.BatchNorm2d(out_channels *
+                               StochasticDepthBottleNeck.expansion),
             )
 
     def survival(self):
@@ -204,7 +203,8 @@ class StochasticDepthResNet(nn.Module):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.pl, self.in_channels, out_channels, stride))
+            layers.append(
+                block(self.pl, self.in_channels, out_channels, stride))
             self.in_channels = out_channels * block.expansion
             self.pl -= self.step
 
@@ -226,38 +226,33 @@ class StochasticDepthResNet(nn.Module):
 @register_model
 def stochastic_depth_resnet18(num_classes=10):
     """return a ResNet 18 object"""
-    return StochasticDepthResNet(
-        StochasticDepthBasicBlock, [2, 2, 2, 2], num_classes=num_classes
-    )
+    return StochasticDepthResNet(StochasticDepthBasicBlock, [2, 2, 2, 2],
+                                 num_classes=num_classes)
 
 
 @register_model
 def stochastic_depth_resnet34(num_classes=10):
     """return a ResNet 34 object"""
-    return StochasticDepthResNet(
-        StochasticDepthBasicBlock, [3, 4, 6, 3], num_classes=num_classes
-    )
+    return StochasticDepthResNet(StochasticDepthBasicBlock, [3, 4, 6, 3],
+                                 num_classes=num_classes)
 
 
 @register_model
 def stochastic_depth_resnet50(num_classes=10):
     """return a ResNet 50 object"""
-    return StochasticDepthResNet(
-        StochasticDepthBottleNeck, [3, 4, 6, 3], num_classes=num_classes
-    )
+    return StochasticDepthResNet(StochasticDepthBottleNeck, [3, 4, 6, 3],
+                                 num_classes=num_classes)
 
 
 @register_model
 def stochastic_depth_resnet101(num_classes=10):
     """return a ResNet 101 object"""
-    return StochasticDepthResNet(
-        StochasticDepthBottleNeck, [3, 4, 23, 3], num_classes=num_classes
-    )
+    return StochasticDepthResNet(StochasticDepthBottleNeck, [3, 4, 23, 3],
+                                 num_classes=num_classes)
 
 
 @register_model
 def stochastic_depth_resnet152(num_classes=10):
     """return a ResNet 152 object"""
-    return StochasticDepthResNet(
-        StochasticDepthBottleNeck, [3, 8, 36, 3], num_classes=num_classes
-    )
+    return StochasticDepthResNet(StochasticDepthBottleNeck, [3, 8, 36, 3],
+                                 num_classes=num_classes)

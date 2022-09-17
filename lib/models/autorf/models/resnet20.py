@@ -5,13 +5,13 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils.model_zoo import load_url as load_state_dict_from_url
 from torchvision.models import ResNet
+
+from ..attention_structure import *
+from ..operations import *
+
 # from utils.utils import drop_path
 
-from ..operations import *
-from ..spaces import OPS
-from ..attention_structure import * 
-
-Genotype = namedtuple("Genotype", "normal normal_concat")
+Genotype = namedtuple('Genotype', 'normal normal_concat')
 
 
 class CifarRFBasicBlock(nn.Module):
@@ -26,14 +26,19 @@ class CifarRFBasicBlock(nn.Module):
         self.genotype = genotype
         if inplanes != planes:
             self.downsample = nn.Sequential(
-                nn.Conv2d(inplanes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(inplanes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes),
             )
         else:
             self.downsample = lambda x: x
         self.stride = stride
 
-        self.attention = ReceptiveFieldAttention(planes, genotype=self.genotype)
+        self.attention = ReceptiveFieldAttention(planes,
+                                                 genotype=self.genotype)
 
     def forward(self, x):
         residual = self.downsample(x)
@@ -60,7 +65,11 @@ class CifarAttentionBasicBlock(nn.Module):
         self.genotype = genotype
         if inplanes != planes:
             self.downsample = nn.Sequential(
-                nn.Conv2d(inplanes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(inplanes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes),
             )
         else:
@@ -89,9 +98,12 @@ class CifarAttentionResNet(nn.Module):
         self.inplane = 16
         self.genotype = genotype
         self.channel_in = 16
-        self.conv1 = nn.Conv2d(
-            3, self.inplane, kernel_size=3, stride=1, padding=1, bias=False
-        )
+        self.conv1 = nn.Conv2d(3,
+                               self.inplane,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(self.inplane)
         self.relu = nn.ReLU()
         self._step = 4
@@ -163,9 +175,8 @@ def rf_resnet20(**kwargs):
 
 def attention_resnet20(num_classes, genotype, **kwargs):
     """Constructs a ResNet-20 model."""
-    model = CifarAttentionResNet(
-        CifarAttentionBasicBlock, 3, num_classes, genotype, **kwargs
-    )
+    model = CifarAttentionResNet(CifarAttentionBasicBlock, 3, num_classes,
+                                 genotype, **kwargs)
     return model
 
 
@@ -175,15 +186,15 @@ def attention_resnet32(**kwargs):
     return model
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     g = Genotype(
         normal=[
-            ("max_pool_3x3", 0),
-            ("max_pool_3x3", 0),
-            ("noise", 1),
-            ("avg_pool_5x5", 0),
-            ("noise", 1),
-            ("noise", 2),
+            ('max_pool_3x3', 0),
+            ('max_pool_3x3', 0),
+            ('noise', 1),
+            ('avg_pool_5x5', 0),
+            ('noise', 1),
+            ('noise', 2),
         ],
         normal_concat=range(0, 4),
     )

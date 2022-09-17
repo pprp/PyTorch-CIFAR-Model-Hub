@@ -38,7 +38,7 @@ vision Transformer:
 
 ### 1.1 Tricks
 
-- Warmup 
+- Warmup
 - Cosine LR Decay
 - SAM
 - Label Smooth
@@ -86,7 +86,7 @@ WideResNet28-10 +Mixup on CIFAR-10:
 python train.py --dataset cifar10 --mixup True
 ```
 
-更多脚本可以参考 scripts/run.sh 
+更多脚本可以参考 scripts/run.sh
 
 ## 3. Results
 
@@ -99,7 +99,7 @@ python train.py --dataset cifar10 --mixup True
 | WideResNet28-10 +Random Erasing |   3.18（96.82）   | **0.114** |        4.65        |
 | WideResNet28-10 +Mixup          |   3.02（96.98）   |   0.158   |        3.02        |
 
-### 3.2 Reimplementation结果 
+### 3.2 Reimplementation结果
 
 | Model                           |    Error rate     | Loss  | Error rate (paper) |
 | :------------------------------ | :---------------: | :---: | :----------------: |
@@ -219,7 +219,7 @@ PS:其他库在加长训练过程（epoch=1800）情况下可以实现 `shake_re
 ```bash
 python train.py --model 'pyramidnet272' \
                 --name 'divide-co-train' \
-                --autoaugmentation True \ 
+                --autoaugmentation True \
                 --random-erase True \
                 --mixup True \
                 --epochs 300 \
@@ -298,5 +298,3 @@ python train.py --model 'shake_resnet26_2x64d' --name 'ss64_ar' --autoaugmentati
 [7] https://github.com/Alibaba-MIIL/ImageNet21K
 
 [8] https://myrtle.ai/learn/how-to-train-your-resnet/
-
-[9] hyperbox 

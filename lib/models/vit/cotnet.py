@@ -2,23 +2,19 @@
 https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
 """
 
-import torch
-import torch.nn as nn
 from functools import partial
-import torch.nn.functional as F
-from .utils.utils import *
 
 import torch
 import torch.nn as nn
 
 from ..registry import register_model
+from .utils.utils import *
 
-__all__ = ["convit_tiny", "convit_small", "convit_base"]
+__all__ = ['convit_tiny', 'convit_small', 'convit_base']
 
 
 class PatchEmbed(nn.Module):
     """2D Image to Patch Embedding"""
-
     def __init__(
         self,
         img_size=32,
@@ -33,13 +29,15 @@ class PatchEmbed(nn.Module):
         patch_size = (patch_size, patch_size)
         self.img_size = img_size
         self.patch_size = patch_size
-        self.grid_size = (img_size[0] // patch_size[0], img_size[1] // patch_size[1])
+        self.grid_size = (img_size[0] // patch_size[0],
+                          img_size[1] // patch_size[1])
         self.num_patches = self.grid_size[0] * self.grid_size[1]
         self.flatten = flatten
 
-        self.proj = nn.Conv2d(
-            in_chans, embed_dim, kernel_size=patch_size, stride=patch_size
-        )
+        self.proj = nn.Conv2d(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=patch_size)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
     def forward(self, x):
@@ -68,7 +66,7 @@ class GPSA(nn.Module):
         self.num_heads = num_heads
         self.dim = dim
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
         self.locality_strength = locality_strength
 
         self.qk = nn.Linear(dim, dim * 2, bias=qkv_bias)
@@ -80,19 +78,15 @@ class GPSA(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         self.gating_param = nn.Parameter(torch.ones(self.num_heads))
         self.rel_indices: torch.Tensor = torch.zeros(
-            1, 1, 1, 3
-        )  # silly torchscript hack, won't work with None
+            1, 1, 1, 3)  # silly torchscript hack, won't work with None
 
     def forward(self, x):
         B, N, C = x.shape
         if self.rel_indices is None or self.rel_indices.shape[1] != N:
             self.rel_indices = self.get_rel_indices(N)
         attn = self.get_attention(x)
-        v = (
-            self.v(x)
-            .reshape(B, N, self.num_heads, C // self.num_heads)
-            .permute(0, 2, 1, 3)
-        )
+        v = (self.v(x).reshape(B, N, self.num_heads,
+                               C // self.num_heads).permute(0, 2, 1, 3))
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -100,11 +94,8 @@ class GPSA(nn.Module):
 
     def get_attention(self, x):
         B, N, C = x.shape
-        qk = (
-            self.qk(x)
-            .reshape(B, N, 2, self.num_heads, C // self.num_heads)
-            .permute(2, 0, 3, 1, 4)
-        )
+        qk = (self.qk(x).reshape(B, N, 2, self.num_heads,
+                                 C // self.num_heads).permute(2, 0, 3, 1, 4))
         q, k = qk[0], qk[1]
         pos_score = self.rel_indices.expand(B, -1, -1, -1).to(x.device)
         pos_score = self.pos_proj(pos_score).permute(0, 3, 1, 2)
@@ -113,17 +104,17 @@ class GPSA(nn.Module):
         pos_score = pos_score.softmax(dim=-1)
 
         gating = self.gating_param.view(1, -1, 1, 1)
-        attn = (1.0 - torch.sigmoid(gating)) * patch_score + torch.sigmoid(
-            gating
-        ) * pos_score
+        attn = (1.0 - torch.sigmoid(gating)
+                ) * patch_score + torch.sigmoid(gating) * pos_score
         attn /= attn.sum(dim=-1).unsqueeze(-1)
         attn = self.attn_drop(attn)
         return attn
 
     def get_attention_map(self, x, return_map=False):
         attn_map = self.get_attention(x).mean(0)  # average over batch
-        distances = self.rel_indices.squeeze()[:, :, -1] ** 0.5
-        dist = torch.einsum("nm,hnm->h", (distances, attn_map)) / distances.size(0)
+        distances = self.rel_indices.squeeze()[:, :, -1]**0.5
+        dist = torch.einsum('nm,hnm->h',
+                            (distances, attn_map)) / distances.size(0)
         if return_map:
             return dist, attn_map
         else:
@@ -133,27 +124,28 @@ class GPSA(nn.Module):
         self.v.weight.data.copy_(torch.eye(self.dim))
         locality_distance = 1  # max(1,1/locality_strength**.5)
 
-        kernel_size = int(self.num_heads ** 0.5)
-        center = (kernel_size - 1) / 2 if kernel_size % 2 == 0 else kernel_size // 2
+        kernel_size = int(self.num_heads**0.5)
+        center = (kernel_size -
+                  1) / 2 if kernel_size % 2 == 0 else kernel_size // 2
         for h1 in range(kernel_size):
             for h2 in range(kernel_size):
                 position = h1 + kernel_size * h2
                 self.pos_proj.weight.data[position, 2] = -1
-                self.pos_proj.weight.data[position, 1] = (
-                    2 * (h1 - center) * locality_distance
-                )
-                self.pos_proj.weight.data[position, 0] = (
-                    2 * (h2 - center) * locality_distance
-                )
+                self.pos_proj.weight.data[position, 1] = (2 * (h1 - center) *
+                                                          locality_distance)
+                self.pos_proj.weight.data[position, 0] = (2 * (h2 - center) *
+                                                          locality_distance)
         self.pos_proj.weight.data *= self.locality_strength
 
     def get_rel_indices(self, num_patches: int) -> torch.Tensor:
-        img_size = int(num_patches ** 0.5)
+        img_size = int(num_patches**0.5)
         rel_indices = torch.zeros(1, num_patches, num_patches, 3)
-        ind = torch.arange(img_size).view(1, -1) - torch.arange(img_size).view(-1, 1)
+        ind = torch.arange(img_size).view(1, -1) - torch.arange(img_size).view(
+            -1, 1)
         indx = ind.repeat(img_size, img_size)
-        indy = ind.repeat_interleave(img_size, dim=0).repeat_interleave(img_size, dim=1)
-        indd = indx ** 2 + indy ** 2
+        indy = ind.repeat_interleave(img_size,
+                                     dim=0).repeat_interleave(img_size, dim=1)
+        indd = indx**2 + indy**2
         rel_indices[:, :, :, 2] = indd.unsqueeze(0)
         rel_indices[:, :, :, 1] = indy.unsqueeze(0)
         rel_indices[:, :, :, 0] = indx.unsqueeze(0)
@@ -165,7 +157,6 @@ class HybridEmbed(nn.Module):
     """CNN Feature Map Embedding
     Extract feature map from CNN, flatten, project to embedding dim.
     """
-
     def __init__(
         self,
         backbone,
@@ -188,45 +179,52 @@ class HybridEmbed(nn.Module):
                 training = backbone.training
                 if training:
                     backbone.eval()
-                o = self.backbone(torch.zeros(1, in_chans, img_size[0], img_size[1]))
+                o = self.backbone(
+                    torch.zeros(1, in_chans, img_size[0], img_size[1]))
                 if isinstance(o, (list, tuple)):
-                    o = o[-1]  # last feature if backbone outputs list/tuple of features
+                    o = o[
+                        -1]  # last feature if backbone outputs list/tuple of features
                 feature_size = o.shape[-2:]
                 feature_dim = o.shape[1]
                 backbone.train(training)
         else:
             feature_size = (feature_size, feature_size)
-            if hasattr(self.backbone, "feature_info"):
+            if hasattr(self.backbone, 'feature_info'):
                 feature_dim = self.backbone.feature_info.channels()[-1]
             else:
                 feature_dim = self.backbone.num_features
-        assert (
-            feature_size[0] % patch_size[0] == 0
-            and feature_size[1] % patch_size[1] == 0
-        )
+        assert (feature_size[0] % patch_size[0] == 0
+                and feature_size[1] % patch_size[1] == 0)
         self.grid_size = (
             feature_size[0] // patch_size[0],
             feature_size[1] // patch_size[1],
         )
         self.num_patches = self.grid_size[0] * self.grid_size[1]
-        self.proj = nn.Conv2d(
-            feature_dim, embed_dim, kernel_size=patch_size, stride=patch_size
-        )
+        self.proj = nn.Conv2d(feature_dim,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=patch_size)
 
     def forward(self, x):
         x = self.backbone(x)
         if isinstance(x, (list, tuple)):
-            x = x[-1]  # last feature if backbone outputs list/tuple of features
+            x = x[
+                -1]  # last feature if backbone outputs list/tuple of features
         x = self.proj(x).flatten(2).transpose(1, 2)
         return x
 
 
 class MHSA(nn.Module):
-    def __init__(self, dim, num_heads=8, qkv_bias=False, attn_drop=0.0, proj_drop=0.0):
+    def __init__(self,
+                 dim,
+                 num_heads=8,
+                 qkv_bias=False,
+                 attn_drop=0.0,
+                 proj_drop=0.0):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
 
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -235,24 +233,23 @@ class MHSA(nn.Module):
 
     def get_attention_map(self, x, return_map=False):
         B, N, C = x.shape
-        qkv = (
-            self.qkv(x)
-            .reshape(B, N, 3, self.num_heads, C // self.num_heads)
-            .permute(2, 0, 3, 1, 4)
-        )
+        qkv = (self.qkv(x).reshape(B, N, 3, self.num_heads,
+                                   C // self.num_heads).permute(2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
         attn_map = (q @ k.transpose(-2, -1)) * self.scale
         attn_map = attn_map.softmax(dim=-1).mean(0)
 
-        img_size = int(N ** 0.5)
-        ind = torch.arange(img_size).view(1, -1) - torch.arange(img_size).view(-1, 1)
+        img_size = int(N**0.5)
+        ind = torch.arange(img_size).view(1, -1) - torch.arange(img_size).view(
+            -1, 1)
         indx = ind.repeat(img_size, img_size)
-        indy = ind.repeat_interleave(img_size, dim=0).repeat_interleave(img_size, dim=1)
-        indd = indx ** 2 + indy ** 2
-        distances = indd ** 0.5
-        distances = distances.to("cuda")
+        indy = ind.repeat_interleave(img_size,
+                                     dim=0).repeat_interleave(img_size, dim=1)
+        indd = indx**2 + indy**2
+        distances = indd**0.5
+        distances = distances.to('cuda')
 
-        dist = torch.einsum("nm,hnm->h", (distances, attn_map)) / N
+        dist = torch.einsum('nm,hnm->h', (distances, attn_map)) / N
         if return_map:
             return dist, attn_map
         else:
@@ -260,11 +257,8 @@ class MHSA(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        qkv = (
-            self.qkv(x)
-            .reshape(B, N, 3, self.num_heads, C // self.num_heads)
-            .permute(2, 0, 3, 1, 4)
-        )
+        qkv = (self.qkv(x).reshape(B, N, 3, self.num_heads,
+                                   C // self.num_heads).permute(2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
@@ -312,7 +306,8 @@ class Block(nn.Module):
                 attn_drop=attn_drop,
                 proj_drop=drop,
             )
-        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(
@@ -330,7 +325,6 @@ class Block(nn.Module):
 
 class ConViT(nn.Module):
     """Vision Transformer with support for patch or hybrid CNN input stage"""
-
     def __init__(
         self,
         img_size=32,
@@ -383,53 +377,49 @@ class ConViT(nn.Module):
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         if self.use_pos_embed:
-            self.pos_embed = nn.Parameter(torch.zeros(1, num_patches, embed_dim))
+            self.pos_embed = nn.Parameter(
+                torch.zeros(1, num_patches, embed_dim))
             trunc_normal_(self.pos_embed, std=0.02)
 
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, depth)
-        ]  # stochastic depth decay rule
-        self.blocks = nn.ModuleList(
-            [
-                Block(
-                    dim=embed_dim,
-                    num_heads=num_heads,
-                    mlp_ratio=mlp_ratio,
-                    qkv_bias=qkv_bias,
-                    drop=drop_rate,
-                    attn_drop=attn_drop_rate,
-                    drop_path=dpr[i],
-                    norm_layer=norm_layer,
-                    use_gpsa=True,
-                    locality_strength=locality_strength,
-                )
-                if i < local_up_to_layer
-                else Block(
-                    dim=embed_dim,
-                    num_heads=num_heads,
-                    mlp_ratio=mlp_ratio,
-                    qkv_bias=qkv_bias,
-                    drop=drop_rate,
-                    attn_drop=attn_drop_rate,
-                    drop_path=dpr[i],
-                    norm_layer=norm_layer,
-                    use_gpsa=False,
-                )
-                for i in range(depth)
-            ]
-        )
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)
+               ]  # stochastic depth decay rule
+        self.blocks = nn.ModuleList([
+            Block(
+                dim=embed_dim,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                qkv_bias=qkv_bias,
+                drop=drop_rate,
+                attn_drop=attn_drop_rate,
+                drop_path=dpr[i],
+                norm_layer=norm_layer,
+                use_gpsa=True,
+                locality_strength=locality_strength,
+            ) if i < local_up_to_layer else Block(
+                dim=embed_dim,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                qkv_bias=qkv_bias,
+                drop=drop_rate,
+                attn_drop=attn_drop_rate,
+                drop_path=dpr[i],
+                norm_layer=norm_layer,
+                use_gpsa=False,
+            ) for i in range(depth)
+        ])
         self.norm = norm_layer(embed_dim)
 
         # Classifier head
-        self.feature_info = [dict(num_chs=embed_dim, reduction=0, module="head")]
-        self.head = (
-            nn.Linear(embed_dim, num_classes) if num_classes > 0 else nn.Identity()
-        )
+        self.feature_info = [
+            dict(num_chs=embed_dim, reduction=0, module='head')
+        ]
+        self.head = (nn.Linear(embed_dim, num_classes)
+                     if num_classes > 0 else nn.Identity())
 
         trunc_normal_(self.cls_token, std=0.02)
         self.apply(self._init_weights)
         for n, m in self.named_modules():
-            if hasattr(m, "local_init"):
+            if hasattr(m, 'local_init'):
                 m.local_init()
 
     def _init_weights(self, m):
@@ -443,16 +433,15 @@ class ConViT(nn.Module):
 
     @torch.jit.ignore
     def no_weight_decay(self):
-        return {"pos_embed", "cls_token"}
+        return {'pos_embed', 'cls_token'}
 
     def get_classifier(self):
         return self.head
 
-    def reset_classifier(self, num_classes, global_pool=""):
+    def reset_classifier(self, num_classes, global_pool=''):
         self.num_classes = num_classes
-        self.head = (
-            nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
-        )
+        self.head = (nn.Linear(self.embed_dim, num_classes)
+                     if num_classes > 0 else nn.Identity())
 
     def forward_features(self, x):
         B = x.shape[0]
@@ -521,7 +510,7 @@ def convit_base(num_classes=10, **kwargs):
     return model
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     m = convit_small(10)
     x = torch.ones(6, 3, 32, 32)
     print(m(x).shape)

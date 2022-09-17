@@ -1,14 +1,16 @@
 """
 PoolFormer implementation
 """
-import os
 import copy
+import os
+
 import torch
 import torch.nn as nn
-from .utils.utils import trunc_normal_, DropPath
-from ..registry import register_model
 
-__all__ = ["poolformer_s12", "poolformer_s24", "poolformer_s36"]
+from ..registry import register_model
+from .utils.utils import DropPath, trunc_normal_
+
+__all__ = ['poolformer_s12', 'poolformer_s24', 'poolformer_s36']
 
 
 class PatchEmbed(nn.Module):
@@ -17,7 +19,6 @@ class PatchEmbed(nn.Module):
     Input: tensor in shape [B, C, H, W]
     Output: tensor in shape [B, C, H/stride, W/stride]
     """
-
     def __init__(
         self,
         patch_size=2,
@@ -31,9 +32,11 @@ class PatchEmbed(nn.Module):
         patch_size = (patch_size, patch_size)
         stride = (stride, stride)
         padding = (padding, padding)
-        self.proj = nn.Conv2d(
-            in_chans, embed_dim, kernel_size=patch_size, stride=stride, padding=padding
-        )
+        self.proj = nn.Conv2d(in_chans,
+                              embed_dim,
+                              kernel_size=patch_size,
+                              stride=stride,
+                              padding=padding)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
     def forward(self, x):
@@ -47,7 +50,6 @@ class LayerNormChannel(nn.Module):
     LayerNorm only for Channel Dimension.
     Input: tensor in shape [B, C, H, W]
     """
-
     def __init__(self, num_channels, eps=1e-05):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(num_channels))
@@ -59,8 +61,7 @@ class LayerNormChannel(nn.Module):
         s = (x - u).pow(2).mean(1, keepdim=True)
         x = (x - u) / torch.sqrt(s + self.eps)
         x = self.weight.unsqueeze(-1).unsqueeze(-1) * x + self.bias.unsqueeze(
-            -1
-        ).unsqueeze(-1)
+            -1).unsqueeze(-1)
         return x
 
 
@@ -69,7 +70,6 @@ class GroupNorm(nn.GroupNorm):
     Group Normalization with 1 group.
     Input: tensor in shape [B, C, H, W]
     """
-
     def __init__(self, num_channels, **kwargs):
         super().__init__(1, num_channels, **kwargs)
 
@@ -79,12 +79,12 @@ class Pooling(nn.Module):
     Implementation of pooling for PoolFormer
     --pool_size: pooling size
     """
-
     def __init__(self, pool_size=3):
         super().__init__()
-        self.pool = nn.AvgPool2d(
-            pool_size, stride=1, padding=pool_size // 2, count_include_pad=False
-        )
+        self.pool = nn.AvgPool2d(pool_size,
+                                 stride=1,
+                                 padding=pool_size // 2,
+                                 count_include_pad=False)
 
     def forward(self, x):
         return self.pool(x) - x
@@ -95,7 +95,6 @@ class Mlp(nn.Module):
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
     """
-
     def __init__(
         self,
         in_features,
@@ -142,7 +141,6 @@ class PoolFormerBlock(nn.Module):
     --use_layer_scale, --layer_scale_init_value: LayerScale,
         refer to https://arxiv.org/abs/2103.17239
     """
-
     def __init__(
         self,
         dim,
@@ -170,25 +168,25 @@ class PoolFormerBlock(nn.Module):
         )
 
         # The following two techniques are useful to train deep PoolFormers.
-        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0.0 else nn.Identity()
         self.use_layer_scale = use_layer_scale
         if use_layer_scale:
-            self.layer_scale_1 = nn.Parameter(
-                layer_scale_init_value * torch.ones((dim)), requires_grad=True
-            )
-            self.layer_scale_2 = nn.Parameter(
-                layer_scale_init_value * torch.ones((dim)), requires_grad=True
-            )
+            self.layer_scale_1 = nn.Parameter(layer_scale_init_value *
+                                              torch.ones((dim)),
+                                              requires_grad=True)
+            self.layer_scale_2 = nn.Parameter(layer_scale_init_value *
+                                              torch.ones((dim)),
+                                              requires_grad=True)
 
     def forward(self, x):
         if self.use_layer_scale:
             x = x + self.drop_path(
-                self.layer_scale_1.unsqueeze(-1).unsqueeze(-1)
-                * self.token_mixer(self.norm1(x))
-            )
+                self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) *
+                self.token_mixer(self.norm1(x)))
             x = x + self.drop_path(
-                self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) * self.mlp(self.norm2(x))
-            )
+                self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) *
+                self.mlp(self.norm2(x)))
         else:
             x = x + self.drop_path(self.token_mixer(self.norm1(x)))
             x = x + self.drop_path(self.mlp(self.norm2(x)))
@@ -214,9 +212,8 @@ def basic_blocks(
     """
     blocks = []
     for block_idx in range(layers[index]):
-        block_dpr = (
-            drop_path_rate * (block_idx + sum(layers[:index])) / (sum(layers) - 1)
-        )
+        block_dpr = (drop_path_rate * (block_idx + sum(layers[:index])) /
+                     (sum(layers) - 1))
         blocks.append(
             PoolFormerBlock(
                 dim,
@@ -228,8 +225,7 @@ def basic_blocks(
                 drop_path=block_dpr,
                 use_layer_scale=use_layer_scale,
                 layer_scale_init_value=layer_scale_init_value,
-            )
-        )
+            ))
     blocks = nn.Sequential(*blocks)
 
     return blocks
@@ -252,7 +248,6 @@ class PoolFormer(nn.Module):
     --init_cfg，--pretrained:
         for mmdetection and mmsegmentation to load pretrianfed weights
     """
-
     def __init__(
         self,
         layers,
@@ -320,8 +315,7 @@ class PoolFormer(nn.Module):
                         padding=down_pad,
                         in_chans=embed_dims[i],
                         embed_dim=embed_dims[i + 1],
-                    )
-                )
+                    ))
 
         self.network = nn.ModuleList(network)
 
@@ -329,7 +323,7 @@ class PoolFormer(nn.Module):
             # add a norm layer for each output
             self.out_indices = [0, 2, 4, 6]
             for i_emb, i_layer in enumerate(self.out_indices):
-                if i_emb == 0 and os.environ.get("FORK_LAST3", None):
+                if i_emb == 0 and os.environ.get('FORK_LAST3', None):
                     # TODO: more elegant way
                     """For RetinaNet, `start_level=1`. The first norm layer will not used.
                     cmd: `FORK_LAST3=1 python -m torch.distributed.launch ...`
@@ -337,20 +331,18 @@ class PoolFormer(nn.Module):
                     layer = nn.Identity()
                 else:
                     layer = norm_layer(embed_dims[i_emb])
-                layer_name = f"norm{i_layer}"
+                layer_name = f'norm{i_layer}'
                 self.add_module(layer_name, layer)
         else:
             # Classifier head
             self.norm = norm_layer(embed_dims[-1])
-            self.head = (
-                nn.Linear(embed_dims[-1], num_classes)
-                if num_classes > 0
-                else nn.Identity()
-            )
+            self.head = (nn.Linear(embed_dims[-1], num_classes)
+                         if num_classes > 0 else nn.Identity())
 
         self.apply(self.cls_init_weights)
         # load pre-trained model
-        if self.fork_feat and (self.init_cfg is not None or pretrained is not None):
+        if self.fork_feat and (self.init_cfg is not None
+                               or pretrained is not None):
             self.init_weights()
 
     # init for classification
@@ -365,9 +357,8 @@ class PoolFormer(nn.Module):
 
     def reset_classifier(self, num_classes):
         self.num_classes = num_classes
-        self.head = (
-            nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
-        )
+        self.head = (nn.Linear(self.embed_dim, num_classes)
+                     if num_classes > 0 else nn.Identity())
 
     def forward_embeddings(self, x):
         x = self.patch_embed(x)
@@ -378,7 +369,7 @@ class PoolFormer(nn.Module):
         for idx, block in enumerate(self.network):
             x = block(x)
             if self.fork_feat and idx in self.out_indices:
-                norm_layer = getattr(self, f"norm{idx}")
+                norm_layer = getattr(self, f'norm{idx}')
                 x_out = norm_layer(x)
                 outs.append(x_out)
         if self.fork_feat:

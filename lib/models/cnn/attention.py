@@ -11,6 +11,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
 __all__ = ['attention56', 'attention92']
@@ -26,7 +27,6 @@ class PreActResidualUnit(nn.Module):
         out_channels: residual unit output channel numebr
         stride: stride of residual unit when stride = 2, downsample the featuremap
     """
-
     def __init__(self, in_channels, out_channels, stride):
         super().__init__()
 
@@ -45,13 +45,14 @@ class PreActResidualUnit(nn.Module):
             # 1x1 conv
             nn.BatchNorm2d(bottleneck_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(bottleneck_channels, out_channels, 1)
-        )
+            nn.Conv2d(bottleneck_channels, out_channels, 1))
 
         self.shortcut = nn.Sequential()
         if stride != 2 or (in_channels != out_channels):
-            self.shortcut = nn.Conv2d(
-                in_channels, out_channels, 1, stride=stride)
+            self.shortcut = nn.Conv2d(in_channels,
+                                      out_channels,
+                                      1,
+                                      stride=stride)
 
     def forward(self, x):
 
@@ -62,7 +63,6 @@ class PreActResidualUnit(nn.Module):
 
 
 class AttentionModule1(nn.Module):
-
     def __init__(self, in_channels, out_channels, p=1, t=2, r=1):
         super().__init__()
         # """The hyperparameter p denotes the number of preprocessing Residual
@@ -87,14 +87,10 @@ class AttentionModule1(nn.Module):
         self.shortcut_long = PreActResidualUnit(in_channels, out_channels, 1)
 
         self.sigmoid = nn.Sequential(
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.Sigmoid()
-        )
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=1), nn.Sigmoid())
 
         self.last = self._make_residual(in_channels, out_channels, p)
 
@@ -161,7 +157,6 @@ class AttentionModule1(nn.Module):
 
 
 class AttentionModule2(nn.Module):
-
     def __init__(self, in_channels, out_channels, p=1, t=2, r=1):
         super().__init__()
         # """The hyperparameter p denotes the number of preprocessing Residual
@@ -183,14 +178,10 @@ class AttentionModule2(nn.Module):
         self.shortcut = PreActResidualUnit(in_channels, out_channels, 1)
 
         self.sigmoid = nn.Sequential(
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.Sigmoid()
-        )
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=1), nn.Sigmoid())
 
         self.last = self._make_residual(in_channels, out_channels, p)
 
@@ -241,7 +232,6 @@ class AttentionModule2(nn.Module):
 
 
 class AttentionModule3(nn.Module):
-
     def __init__(self, in_channels, out_channels, p=1, t=2, r=1):
         super().__init__()
 
@@ -258,14 +248,10 @@ class AttentionModule3(nn.Module):
         self.shortcut = PreActResidualUnit(in_channels, out_channels, 1)
 
         self.sigmoid = nn.Sequential(
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=1),
-            nn.Sigmoid()
-        )
+            nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=1), nn.Sigmoid())
 
         self.last = self._make_residual(in_channels, out_channels, p)
 
@@ -307,26 +293,21 @@ class Attention(nn.Module):
     Args:
         block_num: attention module number for each stage
     """
-
     def __init__(self, block_num, num_classes=100):
 
         super().__init__()
         self.pre_conv = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True)
-        )
+            nn.BatchNorm2d(64), nn.ReLU(inplace=True))
 
         self.stage1 = self._make_stage(64, 256, block_num[0], AttentionModule1)
-        self.stage2 = self._make_stage(
-            256, 512, block_num[1], AttentionModule2)
-        self.stage3 = self._make_stage(
-            512, 1024, block_num[2], AttentionModule3)
-        self.stage4 = nn.Sequential(
-            PreActResidualUnit(1024, 2048, 2),
-            PreActResidualUnit(2048, 2048, 1),
-            PreActResidualUnit(2048, 2048, 1)
-        )
+        self.stage2 = self._make_stage(256, 512, block_num[1],
+                                       AttentionModule2)
+        self.stage3 = self._make_stage(512, 1024, block_num[2],
+                                       AttentionModule3)
+        self.stage4 = nn.Sequential(PreActResidualUnit(1024, 2048, 2),
+                                    PreActResidualUnit(2048, 2048, 1),
+                                    PreActResidualUnit(2048, 2048, 1))
         self.avg = nn.AdaptiveAvgPool2d(1)
         self.linear = nn.Linear(2048, num_classes)
 
@@ -352,9 +333,11 @@ class Attention(nn.Module):
 
         return nn.Sequential(*layers)
 
+
 @register_model
 def attention56(num_classes=100):
     return Attention([1, 1, 1], num_classes)
+
 
 @register_model
 def attention92(num_classes=100):

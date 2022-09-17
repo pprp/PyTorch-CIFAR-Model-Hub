@@ -9,9 +9,10 @@
 
 import torch
 import torch.nn as nn
+
 from ..registry import register_model
 
-__all__ = ["xception"]
+__all__ = ['xception']
 
 
 class SeperableConv2d(nn.Module):
@@ -22,16 +23,17 @@ class SeperableConv2d(nn.Module):
     def __init__(self, input_channels, output_channels, kernel_size, **kwargs):
 
         super().__init__()
-        self.depthwise = nn.Conv2d(
-            input_channels,
-            input_channels,
-            kernel_size,
-            groups=input_channels,
-            bias=False,
-            **kwargs
-        )
+        self.depthwise = nn.Conv2d(input_channels,
+                                   input_channels,
+                                   kernel_size,
+                                   groups=input_channels,
+                                   bias=False,
+                                   **kwargs)
 
-        self.pointwise = nn.Conv2d(input_channels, output_channels, 1, bias=False)
+        self.pointwise = nn.Conv2d(input_channels,
+                                   output_channels,
+                                   1,
+                                   bias=False)
 
     def forward(self, x):
         x = self.depthwise(x)
@@ -97,7 +99,8 @@ class EntryFlow(nn.Module):
         )
 
         # no downsampling
-        self.conv5_shortcut = nn.Sequential(nn.Conv2d(256, 728, 1), nn.BatchNorm2d(728))
+        self.conv5_shortcut = nn.Sequential(nn.Conv2d(256, 728, 1),
+                                            nn.BatchNorm2d(728))
 
     def forward(self, x):
         x = self.conv1(x)
@@ -178,9 +181,8 @@ class ExitFLow(nn.Module):
             nn.MaxPool2d(3, stride=2, padding=1),
         )
 
-        self.shortcut = nn.Sequential(
-            nn.Conv2d(728, 1024, 1, stride=2), nn.BatchNorm2d(1024)
-        )
+        self.shortcut = nn.Sequential(nn.Conv2d(728, 1024, 1, stride=2),
+                                      nn.BatchNorm2d(1024))
 
         self.conv = nn.Sequential(
             SeperableConv2d(1024, 1536, 3, padding=1),
@@ -220,6 +222,7 @@ class Xception(nn.Module):
         x = self.fc(x)
 
         return x
+
 
 @register_model
 def xception(num_classes=10):

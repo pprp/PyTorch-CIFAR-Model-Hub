@@ -1,40 +1,33 @@
 import torch
 import torch.nn as nn
+
 from ..registry import register_model
 
 __all__ = ['wideresnet']
-class WideBasic(nn.Module):
 
+
+class WideBasic(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()
         self.residual = nn.Sequential(
-            nn.BatchNorm2d(in_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(
-                in_channels,
-                out_channels,
-                kernel_size=3,
-                stride=stride,
-                padding=1
-            ),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Conv2d(
-                out_channels,
-                out_channels,
-                kernel_size=3,
-                stride=1,
-                padding=1
-            )
-        )
+            nn.BatchNorm2d(in_channels), nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels,
+                      out_channels,
+                      kernel_size=3,
+                      stride=stride,
+                      padding=1), nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True), nn.Dropout(),
+            nn.Conv2d(out_channels,
+                      out_channels,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1))
 
         self.shortcut = nn.Sequential()
 
         if in_channels != out_channels or stride != 1:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride=stride)
-            )
+                nn.Conv2d(in_channels, out_channels, 1, stride=stride))
 
     def forward(self, x):
 
@@ -42,6 +35,7 @@ class WideBasic(nn.Module):
         shortcut = self.shortcut(x)
 
         return residual + shortcut
+
 
 class WideResNet(nn.Module):
     def __init__(self, num_classes, block, depth=50, widen_factor=1):
@@ -101,6 +95,9 @@ class WideResNet(nn.Module):
 
 # Table 9: Best WRN performance over various datasets, single run results.
 @register_model
-def wideresnet(depth=40, widen_factor=10,num_classes=10):
-    net = WideResNet(num_classes, WideBasic, depth=depth, widen_factor=widen_factor)
+def wideresnet(depth=40, widen_factor=10, num_classes=10):
+    net = WideResNet(num_classes,
+                     WideBasic,
+                     depth=depth,
+                     widen_factor=widen_factor)
     return net

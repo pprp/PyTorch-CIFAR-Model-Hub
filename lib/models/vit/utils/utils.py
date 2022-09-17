@@ -1,8 +1,9 @@
 import math
-import torch
 import warnings
-from torch import Tensor
+
+import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 def _no_grad_trunc_normal_(tensor, mean, std, a, b):
@@ -14,8 +15,8 @@ def _no_grad_trunc_normal_(tensor, mean, std, a, b):
 
     if (mean < a - 2 * std) or (mean > b + 2 * std):
         warnings.warn(
-            "mean is more than 2 std from [a, b] in nn.init.trunc_normal_. "
-            "The distribution of values may be incorrect.",
+            'mean is more than 2 std from [a, b] in nn.init.trunc_normal_. '
+            'The distribution of values may be incorrect.',
             stacklevel=2,
         )
 
@@ -66,7 +67,6 @@ def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
 
 class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
-
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
@@ -86,20 +86,27 @@ def drop_path(x, drop_prob: float = 0.0, training: bool = False):
     if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (
-        x.ndim - 1
-    )  # work with diff dim tensors, not just 2D ConvNets
-    random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
+    shape = (x.shape[0], ) + (1, ) * (
+        x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    random_tensor = keep_prob + torch.rand(
+        shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
     output = x.div(keep_prob) * random_tensor
     return output
+
+
 from torch import nn as nn
 
 
 class Mlp(nn.Module):
     """ MLP as used in Vision Transformer, MLP-Mixer and related networks
     """
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -121,7 +128,12 @@ class GluMlp(nn.Module):
     """ MLP w/ GLU style gating
     See: https://arxiv.org/abs/1612.08083, https://arxiv.org/abs/2002.05202
     """
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.Sigmoid, drop=0.):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.Sigmoid,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -150,8 +162,13 @@ class GluMlp(nn.Module):
 class GatedMlp(nn.Module):
     """ MLP as used in gMLP
     """
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU,
-                 gate_layer=None, drop=0.):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU,
+                 gate_layer=None,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -179,15 +196,27 @@ class GatedMlp(nn.Module):
 class ConvMlp(nn.Module):
     """ MLP using 1x1 convs that keeps spatial dims
     """
-    def __init__(
-            self, in_features, hidden_features=None, out_features=None, act_layer=nn.ReLU, norm_layer=None, drop=0.):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.ReLU,
+                 norm_layer=None,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = nn.Conv2d(in_features, hidden_features, kernel_size=1, bias=True)
-        self.norm = norm_layer(hidden_features) if norm_layer else nn.Identity()
+        self.fc1 = nn.Conv2d(in_features,
+                             hidden_features,
+                             kernel_size=1,
+                             bias=True)
+        self.norm = norm_layer(
+            hidden_features) if norm_layer else nn.Identity()
         self.act = act_layer()
-        self.fc2 = nn.Conv2d(hidden_features, out_features, kernel_size=1, bias=True)
+        self.fc2 = nn.Conv2d(hidden_features,
+                             out_features,
+                             kernel_size=1,
+                             bias=True)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):

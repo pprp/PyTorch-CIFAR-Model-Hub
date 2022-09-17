@@ -7,6 +7,7 @@ Reference: https://github.com/keras-team/keras-applications/blob/master/keras_ap
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
 __all__ = ['EfficientNetB0']
@@ -27,13 +28,16 @@ def drop_connect(x, drop_ratio):
 
 class SE(nn.Module):
     '''Squeeze-and-Excitation block with Swish.'''
-
     def __init__(self, in_channels, se_channels):
         super(SE, self).__init__()
-        self.se1 = nn.Conv2d(in_channels, se_channels,
-                             kernel_size=1, bias=True)
-        self.se2 = nn.Conv2d(se_channels, in_channels,
-                             kernel_size=1, bias=True)
+        self.se1 = nn.Conv2d(in_channels,
+                             se_channels,
+                             kernel_size=1,
+                             bias=True)
+        self.se2 = nn.Conv2d(se_channels,
+                             in_channels,
+                             kernel_size=1,
+                             bias=True)
 
     def forward(self, x):
         out = F.adaptive_avg_pool2d(x, (1, 1))
@@ -45,7 +49,6 @@ class SE(nn.Module):
 
 class Block(nn.Module):
     '''expansion + depthwise + pointwise + squeeze-excitation'''
-
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -123,11 +126,16 @@ class EfficientNet(nn.Module):
 
     def _make_layers(self, in_channels):
         layers = []
-        cfg = [self.cfg[k] for k in ['expansion', 'out_channels', 'num_blocks', 'kernel_size',
-                                     'stride']]
+        cfg = [
+            self.cfg[k] for k in [
+                'expansion', 'out_channels', 'num_blocks', 'kernel_size',
+                'stride'
+            ]
+        ]
         b = 0
         blocks = sum(self.cfg['num_blocks'])
-        for expansion, out_channels, num_blocks, kernel_size, stride in zip(*cfg):
+        for expansion, out_channels, num_blocks, kernel_size, stride in zip(
+                *cfg):
             strides = [stride] + [1] * (num_blocks - 1)
             for stride in strides:
                 drop_rate = self.cfg['drop_connect_rate'] * b / blocks
@@ -153,6 +161,7 @@ class EfficientNet(nn.Module):
         out = self.linear(out)
         return out
 
+
 @register_model
 def EfficientNetB0(num_classes=10):
     cfg = {
@@ -164,7 +173,7 @@ def EfficientNetB0(num_classes=10):
         'dropout_rate': 0.2,
         'drop_connect_rate': 0.2,
     }
-    return EfficientNet(cfg,num_classes=num_classes)
+    return EfficientNet(cfg, num_classes=num_classes)
 
 
 def test():
@@ -172,4 +181,3 @@ def test():
     x = torch.randn(2, 3, 32, 32)
     y = net(x)
     print(y.shape)
-

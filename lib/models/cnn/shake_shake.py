@@ -1,12 +1,11 @@
-# -*-coding:utf-8-*-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+
 from ..registry import register_model
 
-__all__ = ["shake_resnet26_2x32d", "shake_resnet26_2x64d"]
+__all__ = ['shake_resnet26_2x32d', 'shake_resnet26_2x64d']
 
 
 class ShakeShake(torch.autograd.Function):
@@ -32,8 +31,18 @@ class Shortcut(nn.Module):
     def __init__(self, in_ch, out_ch, stride):
         super(Shortcut, self).__init__()
         self.stride = stride
-        self.conv1 = nn.Conv2d(in_ch, out_ch // 2, 1, stride=1, padding=0, bias=False)
-        self.conv2 = nn.Conv2d(in_ch, out_ch // 2, 1, stride=1, padding=0, bias=False)
+        self.conv1 = nn.Conv2d(in_ch,
+                               out_ch // 2,
+                               1,
+                               stride=1,
+                               padding=0,
+                               bias=False)
+        self.conv2 = nn.Conv2d(in_ch,
+                               out_ch // 2,
+                               1,
+                               stride=1,
+                               padding=0,
+                               bias=False)
         self.bn = nn.BatchNorm2d(out_ch)
 
     def forward(self, x):
@@ -53,7 +62,8 @@ class ShakeBlock(nn.Module):
     def __init__(self, in_ch, out_ch, stride=1):
         super(ShakeBlock, self).__init__()
         self.equal_io = in_ch == out_ch
-        self.shortcut = self.equal_io and None or Shortcut(in_ch, out_ch, stride=stride)
+        self.shortcut = self.equal_io and None or Shortcut(
+            in_ch, out_ch, stride=stride)
 
         self.branch1 = self._make_branch(in_ch, out_ch, stride)
         self.branch2 = self._make_branch(in_ch, out_ch, stride)
@@ -125,6 +135,7 @@ class ShakeResNet(nn.Module):
 @register_model
 def shake_resnet26_2x32d(num_classes):
     return ShakeResNet(depth=26, base_width=32, num_classes=num_classes)
+
 
 @register_model
 def shake_resnet26_2x64d(num_classes):

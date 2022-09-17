@@ -1,11 +1,9 @@
-import torch
-import torch.nn as nn
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import nn
-from torch.autograd import Function, Variable
+from torch.autograd import Variable
 
 
 class BasicConv(nn.Module):
@@ -34,11 +32,8 @@ class BasicConv(nn.Module):
             groups=groups,
             bias=bias,
         )
-        self.bn = (
-            nn.BatchNorm2d(out_planes, eps=1e-5, momentum=0.01, affine=True)
-            if bn
-            else None
-        )
+        self.bn = (nn.BatchNorm2d(
+            out_planes, eps=1e-5, momentum=0.01, affine=True) if bn else None)
         self.relu = nn.ReLU(inplace=True) if relu else None
 
     def forward(self, x):
@@ -57,7 +52,10 @@ class BasicRFB(nn.Module):
         self.out_channels = out_planes
         inter_planes = in_planes // 8
         self.branch0 = nn.Sequential(
-            BasicConv(in_planes, 2 * inter_planes, kernel_size=1, stride=stride),
+            BasicConv(in_planes,
+                      2 * inter_planes,
+                      kernel_size=1,
+                      stride=stride),
             BasicConv(
                 2 * inter_planes,
                 2 * inter_planes,
@@ -114,12 +112,16 @@ class BasicRFB(nn.Module):
             ),
         )
 
-        self.ConvLinear = BasicConv(
-            6 * inter_planes, out_planes, kernel_size=1, stride=1, relu=False
-        )
-        self.shortcut = BasicConv(
-            in_planes, out_planes, kernel_size=1, stride=stride, relu=False
-        )
+        self.ConvLinear = BasicConv(6 * inter_planes,
+                                    out_planes,
+                                    kernel_size=1,
+                                    stride=1,
+                                    relu=False)
+        self.shortcut = BasicConv(in_planes,
+                                  out_planes,
+                                  kernel_size=1,
+                                  stride=stride,
+                                  relu=False)
         self.relu = nn.ReLU(inplace=False)
 
     def forward(self, x):
@@ -153,8 +155,7 @@ class SPP(nn.Module):
     def __init__(self, c1, c2, k=(5, 9, 13)):
         super(SPP, self).__init__()
         self.m = nn.ModuleList(
-            [nn.MaxPool2d(ki, stride=1, padding=ki // 2) for ki in k]
-        )
+            [nn.MaxPool2d(ki, stride=1, padding=ki // 2) for ki in k])
 
         self.conv = nn.Conv2d(c1 * 4, c2, 1, 1)
 
@@ -177,12 +178,18 @@ class StripPool(nn.Module):
         )
 
         self.conv1 = nn.Sequential(
-            nn.Conv2d(inter_channels, inter_channels, (1, 3), 1, (0, 1), bias=False),
+            nn.Conv2d(inter_channels,
+                      inter_channels, (1, 3),
+                      1, (0, 1),
+                      bias=False),
             nn.BatchNorm2d(inter_channels),
         )
 
         self.conv2 = nn.Sequential(
-            nn.Conv2d(inter_channels, inter_channels, (3, 1), 1, (1, 0), bias=False),
+            nn.Conv2d(inter_channels,
+                      inter_channels, (3, 1),
+                      1, (1, 0),
+                      bias=False),
             nn.BatchNorm2d(inter_channels),
         )
 
@@ -211,7 +218,7 @@ class _ImagePool(nn.Module):
         _, _, H, W = x.shape
         h = self.pool(x)
         h = self.conv(h)
-        h = F.interpolate(h, size=(H, W), mode="bilinear", align_corners=False)
+        h = F.interpolate(h, size=(H, W), mode='bilinear', align_corners=False)
         return h
 
 
@@ -222,48 +229,54 @@ class _ConvBnReLU(nn.Sequential):
 
     BATCH_NORM = nn.BatchNorm2d
 
-    def __init__(
-        self, in_ch, out_ch, kernel_size, stride, padding, dilation, relu=True
-    ):
+    def __init__(self,
+                 in_ch,
+                 out_ch,
+                 kernel_size,
+                 stride,
+                 padding,
+                 dilation,
+                 relu=True):
         super(_ConvBnReLU, self).__init__()
         self.add_module(
-            "conv",
-            nn.Conv2d(
-                in_ch, out_ch, kernel_size, stride, padding, dilation, bias=False
-            ),
+            'conv',
+            nn.Conv2d(in_ch,
+                      out_ch,
+                      kernel_size,
+                      stride,
+                      padding,
+                      dilation,
+                      bias=False),
         )
         # self.add_module("bn", nn.BatchNorm2d(out_ch, eps=1e-5, momentum=1 - 0.999))
 
         if relu:
-            self.add_module("relu", nn.ReLU())
+            self.add_module('relu', nn.ReLU())
 
 
 class ASPP(nn.Module):
     """
     Atrous spatial pyramid pooling with image-level feature
     """
-
     def __init__(self, in_ch, out_ch, rates=[1, 3, 6]):
         super(ASPP, self).__init__()
         self.stages = nn.Module()
-        self.stages.add_module("c0", _ConvBnReLU(in_ch, out_ch, 1, 1, 0, 1))
+        self.stages.add_module('c0', _ConvBnReLU(in_ch, out_ch, 1, 1, 0, 1))
         for i, rate in enumerate(rates):
             self.stages.add_module(
-                "c{}".format(i + 1),
+                'c{}'.format(i + 1),
                 _ConvBnReLU(in_ch, out_ch, 3, 1, padding=rate, dilation=rate),
             )
-        self.stages.add_module("imagepool", _ImagePool(in_ch, out_ch))
-        self.conv1x1 = nn.Conv2d(in_ch * 5, out_ch, kernel_size=1, stride=1, padding=0)
+        self.stages.add_module('imagepool', _ImagePool(in_ch, out_ch))
+        self.conv1x1 = nn.Conv2d(in_ch * 5,
+                                 out_ch,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0)
 
     def forward(self, x):
         x = torch.cat([stage(x) for stage in self.stages.children()], dim=1)
         return self.conv1x1(x)
-
-
-from torch.autograd import Variable, Function
-import torch
-from torch import nn
-import numpy as np
 
 
 class DeformConv2D(nn.Module):
@@ -272,7 +285,11 @@ class DeformConv2D(nn.Module):
         self.kernel_size = kernel_size
         self.padding = padding
         self.zero_padding = nn.ZeroPad2d(padding)
-        self.conv_kernel = nn.Conv2d(inc, outc, kernel_size=kernel_size, stride=kernel_size, bias=bias)
+        self.conv_kernel = nn.Conv2d(inc,
+                                     outc,
+                                     kernel_size=kernel_size,
+                                     stride=kernel_size,
+                                     bias=bias)
 
     def forward(self, x, offset):
         dtype = offset.data.type()
@@ -282,11 +299,15 @@ class DeformConv2D(nn.Module):
         # Change offset's order from [x1, x2, ..., y1, y2, ...] to [x1, y1, x2, y2, ...]
         # Codes below are written to make sure same results of MXNet implementation.
         # You can remove them, and it won't influence the module's performance.
-        offsets_index = Variable(torch.cat([torch.arange(0, 2*N, 2), torch.arange(1, 2*N+1, 2)]), requires_grad=False).type_as(x).long()
+        offsets_index = Variable(torch.cat(
+            [torch.arange(0, 2 * N, 2),
+             torch.arange(1, 2 * N + 1, 2)]),
+                                 requires_grad=False).type_as(x).long()
 
-        print("offset index shape: ", offsets_index.shape)
+        print('offset index shape: ', offsets_index.shape)
         print(offset.shape)
-        offsets_index = offsets_index.unsqueeze(dim=0).unsqueeze(dim=-1).unsqueeze(dim=-1).expand(*offset.size())
+        offsets_index = offsets_index.unsqueeze(dim=0).unsqueeze(
+            dim=-1).unsqueeze(dim=-1).expand(*offset.size())
         offset = torch.gather(offset, dim=1, index=offsets_index)
         # ------------------------------------------------------------------------
 
@@ -301,24 +322,51 @@ class DeformConv2D(nn.Module):
         q_lt = Variable(p.data, requires_grad=False).floor()
         q_rb = q_lt + 1
 
-        q_lt = torch.cat([torch.clamp(q_lt[..., :N], 0, x.size(2)-1), torch.clamp(q_lt[..., N:], 0, x.size(3)-1)], dim=-1).long()
-        q_rb = torch.cat([torch.clamp(q_rb[..., :N], 0, x.size(2)-1), torch.clamp(q_rb[..., N:], 0, x.size(3)-1)], dim=-1).long()
+        q_lt = torch.cat([
+            torch.clamp(q_lt[..., :N], 0,
+                        x.size(2) - 1),
+            torch.clamp(q_lt[..., N:], 0,
+                        x.size(3) - 1)
+        ],
+                         dim=-1).long()
+        q_rb = torch.cat([
+            torch.clamp(q_rb[..., :N], 0,
+                        x.size(2) - 1),
+            torch.clamp(q_rb[..., N:], 0,
+                        x.size(3) - 1)
+        ],
+                         dim=-1).long()
         q_lb = torch.cat([q_lt[..., :N], q_rb[..., N:]], -1)
         q_rt = torch.cat([q_rb[..., :N], q_lt[..., N:]], -1)
 
         # (b, h, w, N)
-        mask = torch.cat([p[..., :N].lt(self.padding)+p[..., :N].gt(x.size(2)-1-self.padding),
-                          p[..., N:].lt(self.padding)+p[..., N:].gt(x.size(3)-1-self.padding)], dim=-1).type_as(p)
+        mask = torch.cat([
+            p[..., :N].lt(self.padding) +
+            p[..., :N].gt(x.size(2) - 1 - self.padding),
+            p[..., N:].lt(self.padding) +
+            p[..., N:].gt(x.size(3) - 1 - self.padding)
+        ],
+                         dim=-1).type_as(p)
         mask = mask.detach()
         floor_p = p - (p - torch.floor(p))
-        p = p*(1-mask) + floor_p*mask
-        p = torch.cat([torch.clamp(p[..., :N], 0, x.size(2)-1), torch.clamp(p[..., N:], 0, x.size(3)-1)], dim=-1)
+        p = p * (1 - mask) + floor_p * mask
+        p = torch.cat([
+            torch.clamp(p[..., :N], 0,
+                        x.size(2) - 1),
+            torch.clamp(p[..., N:], 0,
+                        x.size(3) - 1)
+        ],
+                      dim=-1)
 
         # bilinear kernel (b, h, w, N)
-        g_lt = (1 + (q_lt[..., :N].type_as(p) - p[..., :N])) * (1 + (q_lt[..., N:].type_as(p) - p[..., N:]))
-        g_rb = (1 - (q_rb[..., :N].type_as(p) - p[..., :N])) * (1 - (q_rb[..., N:].type_as(p) - p[..., N:]))
-        g_lb = (1 + (q_lb[..., :N].type_as(p) - p[..., :N])) * (1 - (q_lb[..., N:].type_as(p) - p[..., N:]))
-        g_rt = (1 - (q_rt[..., :N].type_as(p) - p[..., :N])) * (1 + (q_rt[..., N:].type_as(p) - p[..., N:]))
+        g_lt = (1 + (q_lt[..., :N].type_as(p) - p[..., :N])) * (
+            1 + (q_lt[..., N:].type_as(p) - p[..., N:]))
+        g_rb = (1 - (q_rb[..., :N].type_as(p) - p[..., :N])) * (
+            1 - (q_rb[..., N:].type_as(p) - p[..., N:]))
+        g_lb = (1 + (q_lb[..., :N].type_as(p) - p[..., :N])) * (
+            1 - (q_lb[..., N:].type_as(p) - p[..., N:]))
+        g_rt = (1 - (q_rt[..., :N].type_as(p) - p[..., :N])) * (
+            1 + (q_rt[..., N:].type_as(p) - p[..., N:]))
 
         # (b, c, h, w, N)
         x_q_lt = self._get_x_q(x, q_lt, N)
@@ -338,18 +386,23 @@ class DeformConv2D(nn.Module):
         return out
 
     def _get_p_n(self, N, dtype):
-        p_n_x, p_n_y = np.meshgrid(range(-(self.kernel_size-1)//2, (self.kernel_size-1)//2+1),
-                          range(-(self.kernel_size-1)//2, (self.kernel_size-1)//2+1), indexing='ij')
+        p_n_x, p_n_y = np.meshgrid(range(-(self.kernel_size - 1) // 2,
+                                         (self.kernel_size - 1) // 2 + 1),
+                                   range(-(self.kernel_size - 1) // 2,
+                                         (self.kernel_size - 1) // 2 + 1),
+                                   indexing='ij')
         # (2N, 1)
         p_n = np.concatenate((p_n_x.flatten(), p_n_y.flatten()))
-        p_n = np.reshape(p_n, (1, 2*N, 1, 1))
+        p_n = np.reshape(p_n, (1, 2 * N, 1, 1))
         p_n = Variable(torch.from_numpy(p_n).type(dtype), requires_grad=False)
 
         return p_n
 
     @staticmethod
     def _get_p_0(h, w, N, dtype):
-        p_0_x, p_0_y = np.meshgrid(range(1, h+1), range(1, w+1), indexing='ij')
+        p_0_x, p_0_y = np.meshgrid(range(1, h + 1),
+                                   range(1, w + 1),
+                                   indexing='ij')
         p_0_x = p_0_x.flatten().reshape(1, 1, h, w).repeat(N, axis=1)
         p_0_y = p_0_y.flatten().reshape(1, 1, h, w).repeat(N, axis=1)
         p_0 = np.concatenate((p_0_x, p_0_y), axis=1)
@@ -358,7 +411,7 @@ class DeformConv2D(nn.Module):
         return p_0
 
     def _get_p(self, offset, dtype):
-        N, h, w = offset.size(1)//2, offset.size(2), offset.size(3)
+        N, h, w = offset.size(1) // 2, offset.size(2), offset.size(3)
 
         # (1, 2N, 1, 1)
         p_n = self._get_p_n(N, dtype)
@@ -375,28 +428,35 @@ class DeformConv2D(nn.Module):
         x = x.contiguous().view(b, c, -1)
 
         # (b, h, w, N)
-        index = q[..., :N]*padded_w + q[..., N:]  # offset_x*w + offset_y
+        index = q[..., :N] * padded_w + q[..., N:]  # offset_x*w + offset_y
         # (b, c, h*w*N)
-        index = index.contiguous().unsqueeze(dim=1).expand(-1, c, -1, -1, -1).contiguous().view(b, c, -1)
+        index = index.contiguous().unsqueeze(dim=1).expand(
+            -1, c, -1, -1, -1).contiguous().view(b, c, -1)
 
-        x_offset = x.gather(dim=-1, index=index).contiguous().view(b, c, h, w, N)
+        x_offset = x.gather(dim=-1,
+                            index=index).contiguous().view(b, c, h, w, N)
 
         return x_offset
 
     @staticmethod
     def _reshape_x_offset(x_offset, ks):
         b, c, h, w, N = x_offset.size()
-        x_offset = torch.cat([x_offset[..., s:s+ks].contiguous().view(b, c, h, w*ks) for s in range(0, N, ks)], dim=-1)
-        x_offset = x_offset.contiguous().view(b, c, h*ks, w*ks)
+        x_offset = torch.cat([
+            x_offset[..., s:s + ks].contiguous().view(b, c, h, w * ks)
+            for s in range(0, N, ks)
+        ],
+                             dim=-1)
+        x_offset = x_offset.contiguous().view(b, c, h * ks, w * ks)
 
         return x_offset
 
+
 class DCN(nn.Module):
     def __init__(self, inplanes, outplanes):
-        super(DCN,self).__init__()
-        self.offsets = nn.Conv2d(inplanes, 8, kernel_size=3,padding=1)
-        self.dcn = DeformConv2D(inplanes, outplanes, kernel_size=3,padding=1)
-    
+        super(DCN, self).__init__()
+        self.offsets = nn.Conv2d(inplanes, 8, kernel_size=3, padding=1)
+        self.dcn = DeformConv2D(inplanes, outplanes, kernel_size=3, padding=1)
+
     def forward(self, x):
         offset = self.offsets(x)
         return self.dcn(x, offset)
@@ -408,7 +468,6 @@ class DeformNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(32)
         self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2),
-
 
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm2d(64)
@@ -428,11 +487,11 @@ class DeformNet(nn.Module):
         x = F.relu(self.conv1(x))
         x = self.bn1(x)
         x = self.pool1(x)
-        
+
         x = F.relu(self.conv2(x))
         x = self.bn2(x)
         x = self.pool2(x)
-        
+
         x = F.relu(self.conv3(x))
         x = self.bn3(x)
         x = self.pool3(x)
@@ -441,4 +500,4 @@ class DeformNet(nn.Module):
         offsets = self.offsets(x)
         x = self.conv4(x, offsets)
         self.feature_maps.append(x)
-        return x 
+        return x

@@ -4,54 +4,54 @@ import torch.nn as nn
 
 from ..registry import register_model
 
-
-__all__ = ["vgg11"]
+__all__ = ['vgg11']
 
 cfg = {
-    "VGG11": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "VGG13": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "VGG16": [
+    'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG13':
+    [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG16': [
         64,
         64,
-        "M",
+        'M',
         128,
         128,
-        "M",
+        'M',
         256,
         256,
         256,
-        "M",
+        'M',
         512,
         512,
         512,
-        "M",
+        'M',
         512,
         512,
         512,
-        "M",
+        'M',
     ],
-    "VGG19": [
+    'VGG19': [
         64,
         64,
-        "M",
+        'M',
         128,
         128,
-        "M",
+        'M',
         256,
         256,
         256,
         256,
-        "M",
+        'M',
         512,
         512,
         512,
         512,
-        "M",
+        'M',
         512,
         512,
         512,
         512,
-        "M",
+        'M',
     ],
 }
 
@@ -72,7 +72,7 @@ class VGG(nn.Module):
         layers = []
         in_channels = 3
         for x in cfg:
-            if x == "M":
+            if x == 'M':
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             else:
                 layers += [
@@ -87,11 +87,11 @@ class VGG(nn.Module):
 
 @register_model
 def vgg11(num_classes=10):
-    return VGG("VGG11", num_classes=num_classes)
+    return VGG('VGG11', num_classes=num_classes)
 
 
 def test():
-    net = VGG("VGG11")
+    net = VGG('VGG11')
     x = torch.randn(2, 3, 32, 32)
     y = net(x)
     print(y.size())

@@ -1,14 +1,14 @@
 torch
-torchvision 
-tqdm 
+torchvision
+tqdm
 PyYAML
-einops 
+einops
 torchsummary
 hyperbox
 thop
 #  conda install cupy pkg-config compilers libjpeg-turbo opencv numba
-# python setup.py build 
-# python setup.py install 
+# python setup.py build
+# python setup.py install
 
 #  pkg-config --cflags --libs opencv
 #  pkg-config --cflags --libs libturbojpeg

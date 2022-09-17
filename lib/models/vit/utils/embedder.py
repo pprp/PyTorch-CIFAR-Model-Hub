@@ -8,7 +8,8 @@ class Embedder(nn.Module):
                  padding_idx=1,
                  pretrained_weight=None,
                  embed_freeze=False,
-                 *args, **kwargs):
+                 *args,
+                 **kwargs):
         super(Embedder, self).__init__()
         self.embeddings = nn.Embedding.from_pretrained(pretrained_weight, freeze=embed_freeze) \
             if pretrained_weight is not None else \
@@ -24,7 +25,8 @@ class Embedder(nn.Module):
 
     def forward(self, x, mask=None):
         embed = self.embeddings(x)
-        embed = embed if mask is None else embed * self.forward_mask(mask).unsqueeze(-1).float()
+        embed = embed if mask is None else embed * self.forward_mask(
+            mask).unsqueeze(-1).float()
         return embed, mask
 
     @staticmethod

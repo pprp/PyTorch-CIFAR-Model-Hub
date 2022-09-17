@@ -1,5 +1,5 @@
 import numpy as np
-import torch
+
 
 class RandomCropPaste(object):
     def __init__(self, size, alpha=1.0, flip_p=0.5):
@@ -11,23 +11,24 @@ class RandomCropPaste(object):
     def __call__(self, img):
         lam = np.random.beta(self.alpha, self.alpha)
         front_bbx1, front_bby1, front_bbx2, front_bby2 = self._rand_bbox(lam)
-        img_front = img[:, front_bby1:front_bby2, front_bbx1:front_bbx2].clone()
+        img_front = img[:, front_bby1:front_bby2,
+                        front_bbx1:front_bbx2].clone()
         front_w = front_bbx2 - front_bbx1
         front_h = front_bby2 - front_bby1
 
-        img_x1 = np.random.randint(0, high=self.size-front_w)
-        img_y1 = np.random.randint(0, high=self.size-front_h)
+        img_x1 = np.random.randint(0, high=self.size - front_w)
+        img_y1 = np.random.randint(0, high=self.size - front_h)
         img_x2 = img_x1 + front_w
         img_y2 = img_y1 + front_h
 
         if np.random.rand(1) <= self.flip_p:
-            img_front = img_front.flip((-1,))
+            img_front = img_front.flip((-1, ))
         if np.random.rand(1) <= self.flip_p:
-            img = img.flip((-1,))
+            img = img.flip((-1, ))
 
         mixup_alpha = np.random.rand(1)
-        img[:,img_y1:img_y2, img_x1:img_x2] *= mixup_alpha
-        img[:,img_y1:img_y2, img_x1:img_x2] += img_front*(1-mixup_alpha)
+        img[:, img_y1:img_y2, img_x1:img_x2] *= mixup_alpha
+        img[:, img_y1:img_y2, img_x1:img_x2] += img_front * (1 - mixup_alpha)
         return img
 
     def _rand_bbox(self, lam):

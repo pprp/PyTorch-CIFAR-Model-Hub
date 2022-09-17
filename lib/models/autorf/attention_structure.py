@@ -1,6 +1,8 @@
-import torch.nn as nn 
-from .spaces import OPS 
-from .operations import * 
+import torch.nn as nn
+
+from .operations import *
+from .spaces import OPS
+
 
 class LAAttention(nn.Module):
     def __init__(self, step, C, genotype):
@@ -14,12 +16,20 @@ class LAAttention(nn.Module):
         self.se = SE(self.C_in, reduction=2)  # 8
         self.se2 = SE(self.C_in * 4, reduction=2)  # 8
         self.channel_back = nn.Sequential(
-            nn.Conv2d(
-                self.C_in * 5, self._C, kernel_size=1, padding=0, groups=1, bias=False
-            ),
+            nn.Conv2d(self.C_in * 5,
+                      self._C,
+                      kernel_size=1,
+                      padding=0,
+                      groups=1,
+                      bias=False),
             nn.BatchNorm2d(self._C),
             nn.ReLU(inplace=False),
-            nn.Conv2d(self._C, self._C, kernel_size=1, padding=0, groups=1, bias=False),
+            nn.Conv2d(self._C,
+                      self._C,
+                      kernel_size=1,
+                      padding=0,
+                      groups=1,
+                      bias=False),
             nn.BatchNorm2d(self._C),
         )
         self.genotype = genotype
@@ -115,9 +125,12 @@ class ReceptiveFieldAttention(nn.Module):
         op_names, indices = zip(*self.genotype.normal)
         concat = genotype.normal_concat
 
-        self.conv1x1 = nn.Conv2d(
-            C * self._steps, C, kernel_size=1, stride=1, padding=0, bias=False
-        )
+        self.conv1x1 = nn.Conv2d(C * self._steps,
+                                 C,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0,
+                                 bias=False)
 
         if self._se:
             self.se = SE(self.C_in, reduction=4)
@@ -149,7 +162,7 @@ class ReceptiveFieldAttention(nn.Module):
             states.append(s)
 
         # concate all released nodes
-        node_out = torch.cat(states[-self._steps :], dim=1)
+        node_out = torch.cat(states[-self._steps:], dim=1)
         node_out = self.conv1x1(node_out)
         # shortcut
         node_out = node_out + x
@@ -157,4 +170,3 @@ class ReceptiveFieldAttention(nn.Module):
             node_out = self.se(node_out)
 
         return node_out
-

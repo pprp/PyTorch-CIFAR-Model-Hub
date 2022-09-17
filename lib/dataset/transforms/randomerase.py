@@ -1,5 +1,8 @@
-import math, random 
+import math
+import random
+
 from PIL import Image
+
 
 class RandomErase(object):
     def __init__(self, prob, sl, sh, r):
@@ -25,9 +28,9 @@ class RandomErase(object):
                 img = np.array(img)
                 if len(img.shape) == 3:
                     for c in range(img.shape[2]):
-                        img[x : x + h, y : y + w, c] = random.uniform(0, 1)
+                        img[x:x + h, y:y + w, c] = random.uniform(0, 1)
                 else:
-                    img[x : x + h, y : y + w] = random.uniform(0, 1)
+                    img[x:x + h, y:y + w] = random.uniform(0, 1)
                 img = Image.fromarray(img)
 
                 return img

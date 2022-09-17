@@ -1,4 +1,4 @@
-echo on 
+echo on
 E:
 cd E:\GitHub\pytorch-cifar-tricks
 @REM call python train.py --model "shake_resnet26_2x64d" --optims "sam" --name "shake_sam"

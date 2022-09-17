@@ -1,5 +1,7 @@
-import torch
 from collections import defaultdict
+
+import torch
+
 
 class ASAM:
     def __init__(self, optimizer, model, rho=0.5, eta=0.01):
@@ -15,10 +17,10 @@ class ASAM:
         for n, p in self.model.named_parameters():
             if p.grad is None:
                 continue
-            t_w = self.state[p].get("eps")
+            t_w = self.state[p].get('eps')
             if t_w is None:
                 t_w = torch.clone(p).detach()
-                self.state[p]["eps"] = t_w
+                self.state[p]['eps'] = t_w
             if 'weight' in n:
                 t_w[...] = p[...]
                 t_w.abs_().add_(self.eta)
@@ -28,7 +30,7 @@ class ASAM:
         for n, p in self.model.named_parameters():
             if p.grad is None:
                 continue
-            t_w = self.state[p].get("eps")
+            t_w = self.state[p].get('eps')
             if 'weight' in n:
                 p.grad.mul_(t_w)
             eps = t_w
@@ -42,7 +44,7 @@ class ASAM:
         for n, p in self.model.named_parameters():
             if p.grad is None:
                 continue
-            p.sub_(self.state[p]["eps"])
+            p.sub_(self.state[p]['eps'])
         self.optimizer.step()
         self.optimizer.zero_grad()
 
@@ -59,10 +61,10 @@ class SAM(ASAM):
         for n, p in self.model.named_parameters():
             if p.grad is None:
                 continue
-            eps = self.state[p].get("eps")
+            eps = self.state[p].get('eps')
             if eps is None:
                 eps = torch.clone(p).detach()
-                self.state[p]["eps"] = eps
+                self.state[p]['eps'] = eps
             eps[...] = p.grad[...]
             eps.mul_(self.rho / grad_norm)
             p.add_(eps)

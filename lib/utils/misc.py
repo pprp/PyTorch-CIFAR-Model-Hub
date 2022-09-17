@@ -1,20 +1,21 @@
 import copy
-from collections import namedtuple, defaultdict
-import time
-import numpy as np
-from functools import singledispatch
-import torch
-import random
 import datetime
+import random
+import time
+from collections import defaultdict, namedtuple
+from functools import singledispatch
+
+import numpy as np
+import torch
 
 
 def build_expname(args):
     # model and dataset
-    args.name = "e-%s_m-%s_d-%s__" % (args.name, args.model, args.dataset)
+    args.name = 'e-%s_m-%s_d-%s__' % (args.name, args.model, args.dataset)
     # running time
-    args.name += datetime.datetime.now().strftime("%mM_%dD_%HH")
+    args.name += datetime.datetime.now().strftime('%mM_%dD_%HH')
     # random number
-    args.name += "__{:02d}".format(random.randint(0, 99))
+    args.name += '__{:02d}'.format(random.randint(0, 99))
     return args.name
 
 
@@ -38,7 +39,7 @@ class Timer:
 def preprocess(dataset, transforms):
     dataset = copy.copy(dataset)  # shallow copy
     for transform in transforms:
-        dataset["data"] = transform(dataset["data"])
+        dataset['data'] = transform(dataset['data'])
     return dataset
 
 
@@ -64,9 +65,8 @@ def pad(x, border):
 
 @pad.register(np.ndarray)
 def _(x, border):
-    return np.pad(
-        x, [(0, 0), (border, border), (border, border), (0, 0)], mode="reflect"
-    )
+    return np.pad(x, [(0, 0), (border, border), (border, border), (0, 0)],
+                  mode='reflect')
 
 
 @singledispatch
@@ -80,17 +80,16 @@ def _(x, source, target):
 
 
 ## data augmentation
-class Crop(namedtuple("Crop", ("h", "w"))):
+class Crop(namedtuple('Crop', ('h', 'w'))):
     def __call__(self, x, x0, y0):
-        return x[..., y0 : y0 + self.h, x0 : x0 + self.w]
+        return x[..., y0:y0 + self.h, x0:x0 + self.w]
 
     def options(self, shape):
         *_, H, W = shape
-        return [
-            {"x0": x0, "y0": y0}
-            for x0 in range(W + 1 - self.w)
-            for y0 in range(H + 1 - self.h)
-        ]
+        return [{
+            'x0': x0,
+            'y0': y0
+        } for x0 in range(W + 1 - self.w) for y0 in range(H + 1 - self.h)]
 
     def output_shape(self, shape):
         *_, H, W = shape
@@ -112,9 +111,9 @@ def _(x):
     return torch.flip(x, [-1])
 
 
-class FlipLR(namedtuple("FlipLR", ())):
+class FlipLR(namedtuple('FlipLR', ())):
     def __call__(self, x, choice):
         return flip_lr(x) if choice else x
 
     def options(self, shape):
-        return [{"choice": b} for b in [True, False]]
+        return [{'choice': b} for b in [True, False]]

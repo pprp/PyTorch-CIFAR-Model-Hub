@@ -25,15 +25,20 @@ class SE(nn.Module):
 
 def conv1x1(in_channels, out_channels, stride=1):
     """1x1 convolution"""
-    return nn.Conv2d(
-        in_channels, out_channels, kernel_size=1, stride=stride, bias=False
-    )
+    return nn.Conv2d(in_channels,
+                     out_channels,
+                     kernel_size=1,
+                     stride=stride,
+                     bias=False)
 
 
 def conv3x3(in_planes, out_planes, stride=1):
-    return nn.Conv2d(
-        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
-    )
+    return nn.Conv2d(in_planes,
+                     out_planes,
+                     kernel_size=3,
+                     stride=stride,
+                     padding=1,
+                     bias=False)
 
 
 def conv3x3(in_channels, out_channels, stride=1, padding=1, dilation=1):
@@ -77,12 +82,18 @@ class StripPool(nn.Module):
         )
 
         self.conv1 = nn.Sequential(
-            nn.Conv2d(inter_channels, inter_channels, (1, 3), 1, (0, 1), bias=False),
+            nn.Conv2d(inter_channels,
+                      inter_channels, (1, 3),
+                      1, (0, 1),
+                      bias=False),
             nn.BatchNorm2d(inter_channels),
         )
 
         self.conv2 = nn.Sequential(
-            nn.Conv2d(inter_channels, inter_channels, (3, 1), 1, (1, 0), bias=False),
+            nn.Conv2d(inter_channels,
+                      inter_channels, (3, 1),
+                      1, (1, 0),
+                      bias=False),
             nn.BatchNorm2d(inter_channels),
         )
 
@@ -118,13 +129,18 @@ class ConvBnReLU(nn.Sequential):
     """
     Cascade of 2D convolution, batch norm, and ReLU.
     """
-
-    def __init__(
-        self, in_ch, out_ch, kernel_size, stride, padding, dilation, groups, relu=True
-    ):
+    def __init__(self,
+                 in_ch,
+                 out_ch,
+                 kernel_size,
+                 stride,
+                 padding,
+                 dilation,
+                 groups,
+                 relu=True):
         super(ConvBnReLU, self).__init__()
         self.add_module(
-            "conv",
+            'conv',
             nn.Conv2d(
                 in_ch,
                 out_ch,
@@ -136,17 +152,18 @@ class ConvBnReLU(nn.Sequential):
                 groups=groups,
             ),
         )
-        self.add_module("bn", nn.BatchNorm2d(out_ch, eps=1e-5, momentum=1 - 0.999))
+        self.add_module('bn',
+                        nn.BatchNorm2d(out_ch, eps=1e-5, momentum=1 - 0.999))
 
         if relu:
-            self.add_module("relu", nn.ReLU())
+            self.add_module('relu', nn.ReLU())
 
 
 class ChannelPool(nn.Module):
     def forward(self, x):
         channel_out = torch.cat(
-            (torch.max(x, 1)[0].unsqueeze(1), torch.mean(x, 1).unsqueeze(1)), dim=1
-        )
+            (torch.max(x, 1)[0].unsqueeze(1), torch.mean(x, 1).unsqueeze(1)),
+            dim=1)
         # pdb.set_trace()
         return channel_out
 
@@ -191,9 +208,14 @@ class SepConvAttention(nn.Module):
 
 
 class DilConvAttention(nn.Module):
-    def __init__(
-        self, C_in, C_out, kernel_size, stride, padding, dilation, affine=True
-    ):
+    def __init__(self,
+                 C_in,
+                 C_out,
+                 kernel_size,
+                 stride,
+                 padding,
+                 dilation,
+                 affine=True):
         super(DilConvAttention, self).__init__()
         self.compress = ChannelPool()
         self.op = nn.Sequential(
@@ -223,8 +245,18 @@ class FactorizedReduce(nn.Module):
         super(FactorizedReduce, self).__init__()
         assert C_out % 2 == 0
         self.relu = nn.ReLU(inplace=False)
-        self.conv_1 = nn.Conv2d(C_in, C_out // 2, 1, stride=2, padding=0, bias=False)
-        self.conv_2 = nn.Conv2d(C_in, C_out // 2, 1, stride=2, padding=0, bias=False)
+        self.conv_1 = nn.Conv2d(C_in,
+                                C_out // 2,
+                                1,
+                                stride=2,
+                                padding=0,
+                                bias=False)
+        self.conv_2 = nn.Conv2d(C_in,
+                                C_out // 2,
+                                1,
+                                stride=2,
+                                padding=0,
+                                bias=False)
         self.bn = nn.BatchNorm2d(C_out, affine=affine)
 
     def forward(self, x):
@@ -235,9 +267,14 @@ class FactorizedReduce(nn.Module):
 
 
 class DilConv(nn.Module):
-    def __init__(
-        self, C_in, C_out, kernel_size, stride, padding, dilation, affine=True
-    ):
+    def __init__(self,
+                 C_in,
+                 C_out,
+                 kernel_size,
+                 stride,
+                 padding,
+                 dilation,
+                 affine=True):
         super(DilConv, self).__init__()
         self.op = nn.Sequential(
             nn.Conv2d(
@@ -309,7 +346,7 @@ class Zero(nn.Module):
     def forward(self, x):
         if self.stride == 1:
             return x.mul(0.0)
-        return x[:, :, :: self.stride, :: self.stride].mul(0.0)
+        return x[:, :, ::self.stride, ::self.stride].mul(0.0)
 
 
 class BasicConv(nn.Module):
@@ -338,11 +375,8 @@ class BasicConv(nn.Module):
             groups=groups,
             bias=bias,
         )
-        self.bn = (
-            nn.BatchNorm2d(out_planes, eps=1e-5, momentum=0.01, affine=True)
-            if bn
-            else None
-        )
+        self.bn = (nn.BatchNorm2d(
+            out_planes, eps=1e-5, momentum=0.01, affine=True) if bn else None)
         self.relu = nn.ReLU() if relu else None
 
     def forward(self, x):
@@ -360,7 +394,10 @@ class Flatten(nn.Module):
 
 
 class ChannelGate(nn.Module):
-    def __init__(self, gate_channels, reduction_ratio=16, pool_types=["avg", "max"]):
+    def __init__(self,
+                 gate_channels,
+                 reduction_ratio=16,
+                 pool_types=['avg', 'max']):
         super(ChannelGate, self).__init__()
         self.gate_channels = gate_channels
         self.mlp = nn.Sequential(
@@ -374,22 +411,20 @@ class ChannelGate(nn.Module):
     def forward(self, x):
         channel_att_sum = None
         for pool_type in self.pool_types:
-            if pool_type == "avg":
-                avg_pool = F.avg_pool2d(
-                    x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3))
-                )
+            if pool_type == 'avg':
+                avg_pool = F.avg_pool2d(x, (x.size(2), x.size(3)),
+                                        stride=(x.size(2), x.size(3)))
                 channel_att_raw = self.mlp(avg_pool)
-            elif pool_type == "max":
-                max_pool = F.max_pool2d(
-                    x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3))
-                )
+            elif pool_type == 'max':
+                max_pool = F.max_pool2d(x, (x.size(2), x.size(3)),
+                                        stride=(x.size(2), x.size(3)))
                 channel_att_raw = self.mlp(max_pool)
-            elif pool_type == "lp":
-                lp_pool = F.lp_pool2d(
-                    x, 2, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3))
-                )
+            elif pool_type == 'lp':
+                lp_pool = F.lp_pool2d(x,
+                                      2, (x.size(2), x.size(3)),
+                                      stride=(x.size(2), x.size(3)))
                 channel_att_raw = self.mlp(lp_pool)
-            elif pool_type == "lse":
+            elif pool_type == 'lse':
                 lse_pool = logsumexp_2d(x)
                 channel_att_raw = self.mlp(lse_pool)
 
@@ -398,7 +433,8 @@ class ChannelGate(nn.Module):
             else:
                 channel_att_sum = channel_att_sum + channel_att_raw
 
-        scale = torch.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(3).expand_as(x)
+        scale = torch.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(
+            3).expand_as(x)
         return x * scale
 
 
@@ -457,9 +493,12 @@ class SpatialGate(nn.Module):
         super(SpatialGate, self).__init__()
         kernel_size = 7
         self.compress = ChannelPool()
-        self.spatial = BasicConv(
-            2, 1, kernel_size, stride=1, padding=(kernel_size - 1) // 2, relu=False
-        )
+        self.spatial = BasicConv(2,
+                                 1,
+                                 kernel_size,
+                                 stride=1,
+                                 padding=(kernel_size - 1) // 2,
+                                 relu=False)
 
     def forward(self, x):
         x_compress = self.compress(x)
@@ -469,9 +508,13 @@ class SpatialGate(nn.Module):
 
 
 class CBAM(nn.Module):
-    def __init__(self, gate_channels, reduction_ratio=16, pool_types=["avg", "max"]):
+    def __init__(self,
+                 gate_channels,
+                 reduction_ratio=16,
+                 pool_types=['avg', 'max']):
         super(CBAM, self).__init__()
-        self.ChannelGate = ChannelGate(gate_channels, reduction_ratio, pool_types)
+        self.ChannelGate = ChannelGate(gate_channels, reduction_ratio,
+                                       pool_types)
         self.SpatialGate = SpatialGate()
 
     def forward(self, x):
@@ -489,8 +532,9 @@ class NoiseOp(nn.Module):
 
     def forward(self, x):
         if self.stride != 1:
-            x_new = x[:, :, :: self.stride, :: self.stride]
+            x_new = x[:, :, ::self.stride, ::self.stride]
         else:
             x_new = x
-        noise = Variable(x_new.data.new(x_new.size()).normal_(self.mean, self.std))
+        noise = Variable(
+            x_new.data.new(x_new.size()).normal_(self.mean, self.std))
         return noise

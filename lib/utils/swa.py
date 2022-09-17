@@ -2,10 +2,11 @@
 https://github.com/FlyEgle/MAE-pytorch/blob/master/utils/SWA.py
 """
 
-import torch
 import math
-from torch.nn import Module
 from copy import deepcopy
+
+import torch
+from torch.nn import Module
 from torch.optim.lr_scheduler import _LRScheduler
 
 
@@ -78,21 +79,20 @@ class AveragedModel(Module):
         Generalizes Well:
         https://arxiv.org/abs/2001.02312
     """
-
     def __init__(self, model, device=None, avg_fn=None):
         super(AveragedModel, self).__init__()
         self.module = deepcopy(model)
         if device is not None:
             self.module = self.module.to(device)
-        self.register_buffer(
-            "n_averaged", torch.tensor(0, dtype=torch.long, device=device)
-        )
+        self.register_buffer('n_averaged',
+                             torch.tensor(0, dtype=torch.long, device=device))
         if avg_fn is None:
 
-            def avg_fn(averaged_model_parameter, model_parameter, num_averaged):
+            def avg_fn(averaged_model_parameter, model_parameter,
+                       num_averaged):
                 return averaged_model_parameter + (
-                    model_parameter - averaged_model_parameter
-                ) / (num_averaged + 1)
+                    model_parameter -
+                    averaged_model_parameter) / (num_averaged + 1)
 
         self.avg_fn = avg_fn
 
@@ -108,8 +108,8 @@ class AveragedModel(Module):
                 p_swa.detach().copy_(p_model_)
             else:
                 p_swa.detach().copy_(
-                    self.avg_fn(p_swa.detach(), p_model_, self.n_averaged.to(device))
-                )
+                    self.avg_fn(p_swa.detach(), p_model_,
+                                self.n_averaged.to(device)))
         self.n_averaged += 1
 
 
@@ -202,29 +202,28 @@ class SWALR(_LRScheduler):
     .. _Averaging Weights Leads to Wider Optima and Better Generalization:
         https://arxiv.org/abs/1803.05407
     """
-
-    def __init__(
-        self, optimizer, swa_lr, anneal_epochs=10, anneal_strategy="cos", last_epoch=-1
-    ):
+    def __init__(self,
+                 optimizer,
+                 swa_lr,
+                 anneal_epochs=10,
+                 anneal_strategy='cos',
+                 last_epoch=-1):
         swa_lrs = self._format_param(optimizer, swa_lr)
         for swa_lr, group in zip(swa_lrs, optimizer.param_groups):
-            group["swa_lr"] = swa_lr
-        if anneal_strategy not in ["cos", "linear"]:
+            group['swa_lr'] = swa_lr
+        if anneal_strategy not in ['cos', 'linear']:
             raise ValueError(
                 "anneal_strategy must by one of 'cos' or 'linear', "
-                "instead got {}".format(anneal_strategy)
-            )
-        elif anneal_strategy == "cos":
+                'instead got {}'.format(anneal_strategy))
+        elif anneal_strategy == 'cos':
             self.anneal_func = self._cosine_anneal
             print(self.anneal_func)
-        elif anneal_strategy == "linear":
+        elif anneal_strategy == 'linear':
             self.anneal_func = self._linear_anneal
         if not isinstance(anneal_epochs, int) or anneal_epochs < 0:
             raise ValueError(
-                "anneal_epochs must be equal or greater than 0, got {}".format(
-                    anneal_epochs
-                )
-            )
+                'anneal_epochs must be equal or greater than 0, got {}'.format(
+                    anneal_epochs))
         self.anneal_epochs = anneal_epochs
 
         super(SWALR, self).__init__(optimizer, last_epoch)
@@ -233,13 +232,11 @@ class SWALR(_LRScheduler):
     def _format_param(optimizer, swa_lrs):
         if isinstance(swa_lrs, (list, tuple)):
             if len(swa_lrs) != len(optimizer.param_groups):
-                raise ValueError(
-                    "swa_lr must have the same length as "
-                    "optimizer.param_groups: swa_lr has {}, "
-                    "optimizer.param_groups has {}".format(
-                        len(swa_lrs), len(optimizer.param_groups)
-                    )
-                )
+                raise ValueError('swa_lr must have the same length as '
+                                 'optimizer.param_groups: swa_lr has {}, '
+                                 'optimizer.param_groups has {}'.format(
+                                     len(swa_lrs),
+                                     len(optimizer.param_groups)))
             return swa_lrs
         else:
             return [swa_lrs] * len(optimizer.param_groups)
@@ -261,8 +258,8 @@ class SWALR(_LRScheduler):
     def get_lr(self):
         if not self._get_lr_called_within_step:
             warnings.warn(
-                "To get the last learning rate computed by the scheduler, "
-                "please use `get_last_lr()`.",
+                'To get the last learning rate computed by the scheduler, '
+                'please use `get_last_lr()`.',
                 UserWarning,
             )
         step = self._step_count - 1
@@ -272,13 +269,13 @@ class SWALR(_LRScheduler):
         prev_alpha = self.anneal_func(prev_t)
         # print("prev_alpha: ", prev_alpha)
         prev_lrs = [
-            self._get_initial_lr(group["lr"], group["swa_lr"], prev_alpha)
+            self._get_initial_lr(group['lr'], group['swa_lr'], prev_alpha)
             for group in self.optimizer.param_groups
         ]
         # print("prev_lrs", prev_lrs)
         t = max(0, min(1, step / max(1, self.anneal_epochs)))
         alpha = self.anneal_func(t)
         return [
-            group["swa_lr"] * alpha + lr * (1 - alpha)
+            group['swa_lr'] * alpha + lr * (1 - alpha)
             for group, lr in zip(self.optimizer.param_groups, prev_lrs)
         ]

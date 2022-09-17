@@ -1,10 +1,10 @@
-# -*-coding:utf-8-*-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
-__all__ = ["sk_resnext29_16x32d", "sk_resnext29_16x64d"]
+__all__ = ['sk_resnext29_16x32d', 'sk_resnext29_16x64d']
 
 
 class SKConv(nn.Module):
@@ -34,8 +34,7 @@ class SKConv(nn.Module):
                     ),
                     nn.BatchNorm2d(features),
                     nn.ReLU(inplace=False),
-                )
-            )
+                ))
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(features, d)
         self.fcs = nn.ModuleList([])
@@ -58,7 +57,8 @@ class SKConv(nn.Module):
             if i == 0:
                 attention_vectors = vector
             else:
-                attention_vectors = torch.cat([attention_vectors, vector], dim=1)
+                attention_vectors = torch.cat([attention_vectors, vector],
+                                              dim=1)
         attention_vectors = self.softmax(attention_vectors)
         attention_vectors = attention_vectors.unsqueeze(-1).unsqueeze(-1)
         fea_v = (feas * attention_vectors).sum(dim=1)
@@ -84,22 +84,28 @@ class Bottleneck(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
 
-        self.conv_reduce = nn.Conv2d(
-            in_channels, D, kernel_size=1, stride=1, padding=0, bias=False
-        )
+        self.conv_reduce = nn.Conv2d(in_channels,
+                                     D,
+                                     kernel_size=1,
+                                     stride=1,
+                                     padding=0,
+                                     bias=False)
         self.bn_reduce = nn.BatchNorm2d(D)
 
         self.conv_sk = SKConv(D, M, cardinality, r, stride=stride, L=L)
         self.bn = nn.BatchNorm2d(D)
-        self.conv_expand = nn.Conv2d(
-            D, out_channels, kernel_size=1, stride=1, padding=0, bias=False
-        )
+        self.conv_expand = nn.Conv2d(D,
+                                     out_channels,
+                                     kernel_size=1,
+                                     stride=1,
+                                     padding=0,
+                                     bias=False)
         self.bn_expand = nn.BatchNorm2d(out_channels)
 
         self.shortcut = nn.Sequential()
         if in_channels != out_channels:
             self.shortcut.add_module(
-                "shortcut_conv",
+                'shortcut_conv',
                 nn.Conv2d(
                     in_channels,
                     out_channels,
@@ -109,7 +115,8 @@ class Bottleneck(nn.Module):
                     bias=False,
                 ),
             )
-            self.shortcut.add_module("shortcut_bn", nn.BatchNorm2d(out_channels))
+            self.shortcut.add_module('shortcut_bn',
+                                     nn.BatchNorm2d(out_channels))
 
     def forward(self, x):
         out = self.conv_reduce.forward(x)
@@ -123,9 +130,15 @@ class Bottleneck(nn.Module):
 
 
 class SkResNeXt(nn.Module):
-    def __init__(
-        self, cardinality, depth, num_classes, base_width, expansion=4, M=2, r=32, L=32
-    ):
+    def __init__(self,
+                 cardinality,
+                 depth,
+                 num_classes,
+                 base_width,
+                 expansion=4,
+                 M=2,
+                 r=32,
+                 L=32):
         super(SkResNeXt, self).__init__()
         self.M = M
         self.r = r
@@ -146,9 +159,9 @@ class SkResNeXt(nn.Module):
 
         self.conv_1_3x3 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
         self.bn_1 = nn.BatchNorm2d(64)
-        self.stage_1 = self.block("stage_1", self.stages[0], self.stages[1], 1)
-        self.stage_2 = self.block("stage_2", self.stages[1], self.stages[2], 2)
-        self.stage_3 = self.block("stage_3", self.stages[2], self.stages[3], 2)
+        self.stage_1 = self.block('stage_1', self.stages[0], self.stages[1], 1)
+        self.stage_2 = self.block('stage_2', self.stages[1], self.stages[2], 2)
+        self.stage_3 = self.block('stage_3', self.stages[2], self.stages[3], 2)
         self.fc = nn.Linear(self.stages[3], num_classes)
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -160,7 +173,7 @@ class SkResNeXt(nn.Module):
     def block(self, name, in_channels, out_channels, pool_stride=2):
         block = nn.Sequential()
         for bottleneck in range(self.block_depth):
-            name_ = "%s_bottleneck_%d" % (name, bottleneck)
+            name_ = '%s_bottleneck_%d' % (name, bottleneck)
             if bottleneck == 0:
                 block.add_module(
                     name_,
@@ -206,9 +219,15 @@ class SkResNeXt(nn.Module):
 
 @register_model
 def sk_resnext29_16x32d(num_classes):
-    return SkResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=32)
+    return SkResNeXt(cardinality=16,
+                     depth=29,
+                     num_classes=num_classes,
+                     base_width=32)
 
 
 @register_model
 def sk_resnext29_16x64d(num_classes):
-    return SkResNeXt(cardinality=16, depth=29, num_classes=num_classes, base_width=64)
+    return SkResNeXt(cardinality=16,
+                     depth=29,
+                     num_classes=num_classes,
+                     base_width=64)

@@ -2,7 +2,6 @@ import argparse
 import inspect
 import json
 import logging
-import math
 import os
 import traceback
 import warnings
@@ -17,11 +16,7 @@ import rich.syntax
 import rich.tree
 import torch
 import torch.nn as nn
-import wandb
 from omegaconf import DictConfig, OmegaConf
-from PIL import Image
-from pytorch_lightning.loggers.wandb import WandbLogger
-from pytorch_lightning.utilities import rank_zero_only
 from torch.optim.lr_scheduler import _LRScheduler
 
 
@@ -32,7 +27,7 @@ def rank_zero_only(fn):
             s = traceback.extract_stack()
             filename, lineno, name, line = s[-2]
             args = list(args)
-            args[0] = f"[{filename}:{lineno}] - {args[0]}"
+            args[0] = f'[{filename}:{lineno}] - {args[0]}'
             args = tuple(args)
             return fn(*args, **kwargs)
 
@@ -41,7 +36,7 @@ def rank_zero_only(fn):
 
 # TODO: this should be part of the cluster environment
 def _get_rank() -> int:
-    rank_keys = ("RANK", "SLURM_PROCID", "LOCAL_RANK")
+    rank_keys = ('RANK', 'SLURM_PROCID', 'LOCAL_RANK')
     for key in rank_keys:
         rank = os.environ.get(key)
         if rank is not None:
@@ -50,10 +45,12 @@ def _get_rank() -> int:
 
 
 # add the attribute to the function but don't overwrite in case Trainer has already set it
-rank_zero_only.rank = getattr(rank_zero_only, "rank", _get_rank())
+rank_zero_only.rank = getattr(rank_zero_only, 'rank', _get_rank())
 
 
-def get_logger(name=__name__, level=logging.INFO, rank_zero=True) -> logging.Logger:
+def get_logger(name=__name__,
+               level=logging.INFO,
+               rank_zero=True) -> logging.Logger:
     """Initializes multi-GPU-friendly python logger."""
 
     logger = logging.getLogger(name)
@@ -62,7 +59,7 @@ def get_logger(name=__name__, level=logging.INFO, rank_zero=True) -> logging.Log
     if logger.hasHandlers():
         logger.handlers.clear()
     formatter = (
-        "%(cyan)s[%(asctime)s%(reset)s] [%(green)s%(levelname)-4s%(reset)s] %(message)s"
+        '%(cyan)s[%(asctime)s%(reset)s] [%(green)s%(levelname)-4s%(reset)s] %(message)s'
     )
     sh = colorlog.StreamHandler()
     sh.setFormatter(colorlog.ColoredFormatter(formatter))
@@ -71,13 +68,13 @@ def get_logger(name=__name__, level=logging.INFO, rank_zero=True) -> logging.Log
     # otherwise logs would get multiplied for each GPU process in multi-GPU setup
     if rank_zero:
         for level in (
-            "debug",
-            "info",
-            "warning",
-            "error",
-            "exception",
-            "fatal",
-            "critical",
+                'debug',
+                'info',
+                'warning',
+                'error',
+                'exception',
+                'fatal',
+                'critical',
         ):
             setattr(logger, level, rank_zero_only(getattr(logger, level)))
             setattr(sh, level, rank_zero_only(getattr(logger, level)))
@@ -110,12 +107,11 @@ class TorchTensorEncoder(json.JSONEncoder):
     def default(self, o):  # pylint: disable=method-hidden
         if isinstance(o, torch.Tensor):
             olist = o.tolist()
-            if "bool" not in o.type().lower() and all(
-                map(lambda d: d == 0 or d == 1, olist)
-            ):
+            if 'bool' not in o.type().lower() and all(
+                    map(lambda d: d == 0 or d == 1, olist)):
                 print(
-                    "Every element in %s is either 0 or 1. "
-                    "You might consider convert it into bool.",
+                    'Every element in %s is either 0 or 1. '
+                    'You might consider convert it into bool.',
                     olist,
                 )
             return olist
@@ -123,7 +119,7 @@ class TorchTensorEncoder(json.JSONEncoder):
 
 
 def save_arch_to_json(mask: dict, filepath: str):
-    with open(filepath, "w") as f:
+    with open(filepath, 'w') as f:
         json.dump(mask, f, indent=4, sort_keys=True, cls=TorchTensorEncoder)
 
 
@@ -131,14 +127,14 @@ def load_json(filename):
     if filename is None:
         data = None
     elif isinstance(filename, str):
-        with open(filename, "r") as f:
+        with open(filename, 'r') as f:
             data = json.load(f)
         for key, value in data.items():
             data[key] = torch.tensor(value)
     elif isinstance(filename, dict):
         data = filename
     else:
-        raise "Wrong argument value for %s in `load_json` function" % filename
+        raise 'Wrong argument value for %s in `load_json` function' % filename
     return data
 
 
@@ -160,26 +156,26 @@ def extras(config: DictConfig) -> None:
     OmegaConf.set_struct(config, False)
 
     # disable python warnings if <config.ignore_warnings=True>
-    if config.get("ignore_warnings"):
-        log.info("Disabling python warnings! <config.ignore_warnings=True>")
-        warnings.filterwarnings("ignore")
+    if config.get('ignore_warnings'):
+        log.info('Disabling python warnings! <config.ignore_warnings=True>')
+        warnings.filterwarnings('ignore')
 
     # set <config.trainer.fast_dev_run=True> if <config.debug=True>
-    if config.get("debug"):
-        log.info("Running in debug mode! <config.debug=True>")
+    if config.get('debug'):
+        log.info('Running in debug mode! <config.debug=True>')
         config.trainer.fast_dev_run = True
 
     # force debugger friendly configuration if <config.trainer.fast_dev_run=True>
-    if config.trainer.get("fast_dev_run"):
+    if config.trainer.get('fast_dev_run'):
         log.info(
-            "Forcing debugger friendly configuration! <config.trainer.fast_dev_run=True>"
+            'Forcing debugger friendly configuration! <config.trainer.fast_dev_run=True>'
         )
         # Debuggers don't like GPUs or multiprocessing
-        if config.trainer.get("gpus") > 1:
+        if config.trainer.get('gpus') > 1:
             config.trainer.gpus = 1
-        if config.datamodule.get("pin_memory"):
+        if config.datamodule.get('pin_memory'):
             config.datamodule.pin_memory = False
-        if config.datamodule.get("num_workers"):
+        if config.datamodule.get('num_workers'):
             config.datamodule.num_workers = 0
 
     # disable adding new keys to config
@@ -190,12 +186,12 @@ def extras(config: DictConfig) -> None:
 def print_config(
     config: DictConfig,
     fields: Sequence[str] = (
-        "trainer",
-        "model",
-        "datamodule",
-        "callbacks",
-        "logger",
-        "seed",
+        'trainer',
+        'model',
+        'datamodule',
+        'callbacks',
+        'logger',
+        'seed',
     ),
     resolve: bool = True,
 ) -> None:
@@ -208,8 +204,8 @@ def print_config(
         resolve (bool, optional): Whether to resolve reference fields of DictConfig.
     """
 
-    style = "dim"
-    tree = rich.tree.Tree(":gear: CONFIG", style=style, guide_style=style)
+    style = 'dim'
+    tree = rich.tree.Tree(':gear: CONFIG', style=style, guide_style=style)
 
     for field in fields:
         branch = tree.add(field, style=style, guide_style=style)
@@ -219,9 +215,9 @@ def print_config(
         if isinstance(config_section, DictConfig):
             branch_content = OmegaConf.to_yaml(config_section, resolve=resolve)
 
-        branch.add(rich.syntax.Syntax(branch_content, "yaml"))
+        branch.add(rich.syntax.Syntax(branch_content, 'yaml'))
 
-    with open("config_tree.txt", "w") as fp:
+    with open('config_tree.txt', 'w') as fp:
         rich.print(tree, file=fp)
 
 
@@ -247,22 +243,22 @@ def log_hyperparameters(
     hparams = {}
 
     # choose which parts of hydra config will be saved to loggers
-    hparams["trainer"] = config["trainer"]
-    hparams["model"] = config["model"]
-    hparams["datamodule"] = config["datamodule"]
-    if "seed" in config:
-        hparams["seed"] = config["seed"]
-    if "callbacks" in config:
-        hparams["callbacks"] = config["callbacks"]
+    hparams['trainer'] = config['trainer']
+    hparams['model'] = config['model']
+    hparams['datamodule'] = config['datamodule']
+    if 'seed' in config:
+        hparams['seed'] = config['seed']
+    if 'callbacks' in config:
+        hparams['callbacks'] = config['callbacks']
 
     # save number of model parameters
-    hparams["model/params_total"] = sum(p.numel() for p in model.parameters())
-    hparams["model/params_trainable"] = sum(
-        p.numel() for p in model.parameters() if p.requires_grad
-    )
-    hparams["model/params_not_trainable"] = sum(
-        p.numel() for p in model.parameters() if not p.requires_grad
-    )
+    hparams['model/params_total'] = sum(p.numel() for p in model.parameters())
+    hparams['model/params_trainable'] = sum(p.numel()
+                                            for p in model.parameters()
+                                            if p.requires_grad)
+    hparams['model/params_not_trainable'] = sum(p.numel()
+                                                for p in model.parameters()
+                                                if not p.requires_grad)
 
     # send hparams to all loggers
     trainer.logger.log_hyperparams(hparams)
@@ -321,10 +317,9 @@ def hparams_wrapper(cls):
             try:
                 setattr(self, key, value)
             except Exception as e:
-                print(f"Error occurs when setting value for {key} due to {e}")
-        cls.hparams = property(
-            lambda self: self._hparams
-        )  # generate a `hparams` property function
+                print(f'Error occurs when setting value for {key} due to {e}')
+        cls.hparams = property(lambda self: self._hparams
+                               )  # generate a `hparams` property function
         return self
 
     cls.__new__ = __new__
@@ -338,7 +333,6 @@ class FindLR(_LRScheduler):
         num_iter: totoal_iters
         max_lr: maximum  learning rate
     """
-
     def __init__(self, optimizer, max_lr=10, num_iter=100, last_epoch=-1):
 
         self.total_iters = num_iter
@@ -348,19 +342,19 @@ class FindLR(_LRScheduler):
     def get_lr(self):
 
         return [
-            base_lr
-            * (self.max_lr / base_lr) ** (self.last_epoch / (self.total_iters + 1e-32))
+            base_lr * (self.max_lr / base_lr)**(self.last_epoch /
+                                                (self.total_iters + 1e-32))
             for base_lr in self.base_lrs
         ]
 
 
 def str2bool(v):
-    if v.lower() in ["true", 1]:
+    if v.lower() in ['true', 1]:
         return True
-    elif v.lower() in ["false", 0]:
+    elif v.lower() in ['false', 0]:
         return False
     else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def count_params(model):
@@ -388,7 +382,6 @@ def rand_bbox(size, lam):
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
-
     def __init__(self):
         self.reset()
 
@@ -428,9 +421,9 @@ def split_weights(net):
                 no_decay.append(m.bias)
 
         else:
-            if hasattr(m, "weight"):
+            if hasattr(m, 'weight'):
                 no_decay.append(m.weight)
-            if hasattr(m, "bias"):
+            if hasattr(m, 'bias'):
                 no_decay.append(m.bias)
 
     assert len(list(net.parameters())) == len(decay) + len(no_decay)

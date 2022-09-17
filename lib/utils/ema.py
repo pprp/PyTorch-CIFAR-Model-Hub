@@ -7,7 +7,6 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
-
 from torch import distributed as dist
 
 _logger = logging.getLogger(__name__)
@@ -57,9 +56,11 @@ class ModelEma:
                     name = k
                 new_state_dict[name] = v
             self.ema.load_state_dict(new_state_dict)
-            _logger.info("Loaded state_dict_ema")
+            _logger.info('Loaded state_dict_ema')
         else:
-            _logger.warning("Failed to find state_dict_ema, starting from loaded model weights")
+            _logger.warning(
+                'Failed to find state_dict_ema, starting from loaded model weights'
+            )
 
     def update(self, model):
         # correct a mismatch in state dict keys
@@ -105,23 +106,26 @@ class ModelEmaV2(nn.Module):
 
     def _update(self, model, update_fn):
         with torch.no_grad():
-            for ema_v, model_v in zip(self.module.state_dict().values(), model.state_dict().values()):
+            for ema_v, model_v in zip(self.module.state_dict().values(),
+                                      model.state_dict().values()):
                 if self.device is not None:
                     model_v = model_v.to(device=self.device)
                 ema_v.copy_(update_fn(ema_v, model_v))
 
     def update(self, model):
-        self._update(model, update_fn=lambda e, m: self.decay * e + (1. - self.decay) * m)
+        self._update(model,
+                     update_fn=lambda e, m: self.decay * e +
+                     (1. - self.decay) * m)
 
     def set(self, model):
         self._update(model, update_fn=lambda e, m: m)
-        
-        
+
+
 def unwrap_model(model):
     if isinstance(model, ModelEma):
         return unwarp_model(model.ema)
     else:
-        return model.module if hasattr(model, 'module') else model 
+        return model.module if hasattr(model, 'module') else model
 
 
 def distribute_bn(model, world_size, reduce=False):

@@ -1,42 +1,38 @@
-import torch
-from torch import nn, einsum
-import torch.nn.functional as F
-from einops import rearrange, repeat
-from einops.layers.torch import Rearrange
-from .utils.layers import (
-    Residual,
-    Attention,
-    PreNorm,
-    LeFF,
-    FeedForward,
-    LCAttention,
-)
 import numpy as np
+import torch
+from einops import repeat
+from einops.layers.torch import Rearrange
+from torch import nn
+
 from ..registry import register_model
+from .utils.layers import (Attention, FeedForward, LCAttention, LeFF, PreNorm,
+                           Residual)
 
 
 class TransformerLeFF(nn.Module):
-    def __init__(
-        self, dim, depth, heads, dim_head, scale=4, depth_kernel=3, dropout=0.0
-    ):
+    def __init__(self,
+                 dim,
+                 depth,
+                 heads,
+                 dim_head,
+                 scale=4,
+                 depth_kernel=3,
+                 dropout=0.0):
         super().__init__()
         self.layers = nn.ModuleList([])
         for _ in range(depth):
             self.layers.append(
-                nn.ModuleList(
-                    [
-                        Residual(
-                            PreNorm(
-                                dim,
-                                Attention(
-                                    dim, heads=heads, dim_head=dim_head, dropout=dropout
-                                ),
-                            )
-                        ),
-                        Residual(PreNorm(dim, LeFF(dim, scale, depth_kernel))),
-                    ]
-                )
-            )
+                nn.ModuleList([
+                    Residual(
+                        PreNorm(
+                            dim,
+                            Attention(dim,
+                                      heads=heads,
+                                      dim_head=dim_head,
+                                      dropout=dropout),
+                        )),
+                    Residual(PreNorm(dim, LeFF(dim, scale, depth_kernel))),
+                ]))
 
     def forward(self, x):
         c = list()
@@ -56,18 +52,16 @@ class LCA(nn.Module):
         super().__init__()
         self.layers = nn.ModuleList([])
         self.layers.append(
-            nn.ModuleList(
-                [
-                    PreNorm(
-                        dim,
-                        LCAttention(
-                            dim, heads=heads, dim_head=dim_head, dropout=dropout
-                        ),
-                    ),
-                    PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout)),
-                ]
-            )
-        )
+            nn.ModuleList([
+                PreNorm(
+                    dim,
+                    LCAttention(dim,
+                                heads=heads,
+                                dim_head=dim_head,
+                                dropout=dropout),
+                ),
+                PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout)),
+            ]))
 
     def forward(self, x):
         for attn, ff in self.layers:
@@ -86,7 +80,7 @@ class CeiT(nn.Module):
         dim=192,
         depth=12,
         heads=3,
-        pool="cls",
+        pool='cls',
         in_channels=3,
         out_channels=32,
         dim_head=64,
@@ -105,28 +99,28 @@ class CeiT(nn.Module):
         super().__init__()
 
         assert pool in {
-            "cls",
-            "mean",
-        }, "pool type must be either cls (cls token) or mean (mean pooling)"
+            'cls',
+            'mean',
+        }, 'pool type must be either cls (cls token) or mean (mean pooling)'
 
         # IoT
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, conv_kernel, stride, 3),  # 4 to 3
+            nn.Conv2d(in_channels, out_channels, conv_kernel, stride,
+                      3),  # 4 to 3
             nn.BatchNorm2d(out_channels),
             nn.MaxPool2d(pool_kernel, stride),
         )
 
         feature_size = image_size // 4
 
-        assert (
-            feature_size % patch_size == 0
-        ), "Image dimensions must be divisible by the patch size."
-        num_patches = (feature_size // patch_size) ** 2
-        patch_dim = out_channels * patch_size ** 2
+        assert (feature_size % patch_size == 0
+                ), 'Image dimensions must be divisible by the patch size.'
+        num_patches = (feature_size // patch_size)**2
+        patch_dim = out_channels * patch_size**2
         self.to_patch_embedding = nn.Sequential(
-            Rearrange(
-                "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=patch_size, p2=patch_size
-            ),
+            Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)',
+                      p1=patch_size,
+                      p2=patch_size),
             nn.Linear(patch_dim, dim),
         )
 
@@ -134,9 +128,8 @@ class CeiT(nn.Module):
         self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
         self.dropout = nn.Dropout(emb_dropout)
 
-        self.transformer = TransformerLeFF(
-            dim, depth, heads, dim_head, scale_dim, depth_kernel, dropout
-        )
+        self.transformer = TransformerLeFF(dim, depth, heads, dim_head,
+                                           scale_dim, depth_kernel, dropout)
 
         self.with_lca = with_lca
         if with_lca:
@@ -145,16 +138,17 @@ class CeiT(nn.Module):
         self.pool = pool
         self.to_latent = nn.Identity()
 
-        self.mlp_head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, num_classes))
+        self.mlp_head = nn.Sequential(nn.LayerNorm(dim),
+                                      nn.Linear(dim, num_classes))
 
     def forward(self, img):
         x = self.conv(img)
         x = self.to_patch_embedding(x)
         b, n, _ = x.shape
 
-        cls_tokens = repeat(self.cls_token, "() n d -> b n d", b=b)
+        cls_tokens = repeat(self.cls_token, '() n d -> b n d', b=b)
         x = torch.cat((cls_tokens, x), dim=1)
-        x += self.pos_embedding[:, : (n + 1)]
+        x += self.pos_embedding[:, :(n + 1)]
         x = self.dropout(x)
 
         x, c = self.transformer(x)
@@ -162,17 +156,18 @@ class CeiT(nn.Module):
         if self.with_lca:
             x = self.LCA(c)[:, 0]
         else:
-            x = x.mean(dim=1) if self.pool == "mean" else x[:, 0]
+            x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
 
         x = self.to_latent(x)
         return self.mlp_head(x)
+
 
 @register_model
 def ceit_32(num_classes=10):
     return CeiT(32, 4, num_classes)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     img = torch.ones([1, 3, 32, 32])
 
@@ -182,13 +177,13 @@ if __name__ == "__main__":
 
     out = model(img)
 
-    print("Shape of out :", out.shape)  # [B, num_classes]
+    print('Shape of out :', out.shape)  # [B, num_classes]
 
     model = CeiT(224, 4, 1000, with_lca=True)
     out = model(img)
 
-    print("Shape of out :", out.shape)  # [B, num_classes]
+    print('Shape of out :', out.shape)  # [B, num_classes]
 
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     parameters = sum([np.prod(p.size()) for p in parameters]) / 1_000_000
-    print("Trainable Parameters: %.3fM" % parameters)
+    print('Trainable Parameters: %.3fM' % parameters)

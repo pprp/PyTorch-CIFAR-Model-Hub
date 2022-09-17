@@ -5,27 +5,38 @@ SENet is the winner of ImageNet-2017. The paper is not released yet.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..registry import register_model
 
-__all__ = ["senet18_cifar"]
+__all__ = ['senet18_cifar']
 
 
 class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1):
         super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(
-            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-        )
+        self.conv1 = nn.Conv2d(in_planes,
+                               planes,
+                               kernel_size=3,
+                               stride=stride,
+                               padding=1,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=1, padding=1, bias=False
-        )
+        self.conv2 = nn.Conv2d(planes,
+                               planes,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != planes:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_planes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes),
             )
 
@@ -54,18 +65,27 @@ class PreActBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1):
         super(PreActBlock, self).__init__()
         self.bn1 = nn.BatchNorm2d(in_planes)
-        self.conv1 = nn.Conv2d(
-            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-        )
+        self.conv1 = nn.Conv2d(in_planes,
+                               planes,
+                               kernel_size=3,
+                               stride=stride,
+                               padding=1,
+                               bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=1, padding=1, bias=False
-        )
+        self.conv2 = nn.Conv2d(planes,
+                               planes,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
 
         if stride != 1 or in_planes != planes:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False)
-            )
+                nn.Conv2d(in_planes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False))
 
         # SE layers
         self.fc1 = nn.Conv2d(planes, planes // 16, kernel_size=1)
@@ -73,7 +93,7 @@ class PreActBlock(nn.Module):
 
     def forward(self, x):
         out = F.relu(self.bn1(x))
-        shortcut = self.shortcut(out) if hasattr(self, "shortcut") else x
+        shortcut = self.shortcut(out) if hasattr(self, 'shortcut') else x
         out = self.conv1(out)
         out = self.conv2(F.relu(self.bn2(out)))
 
@@ -93,7 +113,12 @@ class SENet(nn.Module):
         super(SENet, self).__init__()
         self.in_planes = 64
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3,
+                               64,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
@@ -157,7 +182,10 @@ class BasicResidualSEBlock(nn.Module):
             nn.Conv2d(in_channels, out_channels, 3, stride=stride, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels * self.expansion, 3, padding=1),
+            nn.Conv2d(out_channels,
+                      out_channels * self.expansion,
+                      3,
+                      padding=1),
             nn.BatchNorm2d(out_channels * self.expansion),
             nn.ReLU(inplace=True),
         )
@@ -165,19 +193,20 @@ class BasicResidualSEBlock(nn.Module):
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != out_channels * self.expansion:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels * self.expansion, 1, stride=stride),
+                nn.Conv2d(in_channels,
+                          out_channels * self.expansion,
+                          1,
+                          stride=stride),
                 nn.BatchNorm2d(out_channels * self.expansion),
             )
 
         self.squeeze = nn.AdaptiveAvgPool2d(1)
         self.excitation = nn.Sequential(
-            nn.Linear(
-                out_channels * self.expansion, out_channels * self.expansion // r
-            ),
+            nn.Linear(out_channels * self.expansion,
+                      out_channels * self.expansion // r),
             nn.ReLU(inplace=True),
-            nn.Linear(
-                out_channels * self.expansion // r, out_channels * self.expansion
-            ),
+            nn.Linear(out_channels * self.expansion // r,
+                      out_channels * self.expansion),
             nn.Sigmoid(),
         )
 
@@ -216,20 +245,21 @@ class BottleneckResidualSEBlock(nn.Module):
 
         self.squeeze = nn.AdaptiveAvgPool2d(1)
         self.excitation = nn.Sequential(
-            nn.Linear(
-                out_channels * self.expansion, out_channels * self.expansion // r
-            ),
+            nn.Linear(out_channels * self.expansion,
+                      out_channels * self.expansion // r),
             nn.ReLU(inplace=True),
-            nn.Linear(
-                out_channels * self.expansion // r, out_channels * self.expansion
-            ),
+            nn.Linear(out_channels * self.expansion // r,
+                      out_channels * self.expansion),
             nn.Sigmoid(),
         )
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != out_channels * self.expansion:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels * self.expansion, 1, stride=stride),
+                nn.Conv2d(in_channels,
+                          out_channels * self.expansion,
+                          1,
+                          stride=stride),
                 nn.BatchNorm2d(out_channels * self.expansion),
             )
 
@@ -254,9 +284,8 @@ class SEResNet(nn.Module):
 
         self.in_channels = 64
 
-        self.pre = nn.Sequential(
-            nn.Conv2d(3, 64, 3, padding=1), nn.BatchNorm2d(64), nn.ReLU(inplace=True)
-        )
+        self.pre = nn.Sequential(nn.Conv2d(3, 64, 3, padding=1),
+                                 nn.BatchNorm2d(64), nn.ReLU(inplace=True))
 
         self.stage1 = self._make_stage(block, block_num[0], 64, 1)
         self.stage2 = self._make_stage(block, block_num[1], 128, 2)

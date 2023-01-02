@@ -54,8 +54,8 @@ def main():
 
     train_dataset = mnist.MNIST(root='./data', train=True, transform=ToTensor(), download=True)
     test_dataset = mnist.MNIST(root='./data', train=False, transform=ToTensor(), download=True)
-    train_loader = DataLoader(train_dataset, batch_size=5)
-    test_loader = DataLoader(test_dataset, batch_size=5)
+    train_loader = DataLoader(train_dataset, batch_size=5, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=5, shuffle=False)
     val_loader = test_loader 
 
     print('load data successfully')
@@ -84,20 +84,40 @@ def main():
     momentum = 0.9
     learning_rate = 0.001
 
+    metric_list = []
+    loss_list = []
+    output_list = []
+
+
     # minimize the loss function to network prediction, 
     # instead of the network parameter w.
     for i, (images, labels) in enumerate(train_loader):
-        
+        # get the network prediction optimized with loss function L
+        output = model(images)
         for _ in range(500):
-            output = model(images)
-
             loss = criterion(output, labels)
-            loss.backward()
+            loss.backward(retain_graph=True)
 
             # update with learning rate of 0.001 and momumtum of 0.9
-            output = output * momentum - learning_rate * model.gradient     
+            output = output * momentum - learning_rate * model.gradient
+        output_list.append(output)
+        loss_list.append(criterion(output, labels))
+        metric_list.append(accuracy(output, labels))
 
+        if i > 5:
+            break 
+    
+    # compute the correlation score 
+    corr_score_list = []
+    for i, (images, labels) in enumerate(train_loader):
+        output = model(images)
+        corr_score = accuracy(output_list[i], labels)[0] - accuracy(output, labels)[0]
+        corr_score_list.append(corr_score)
 
+        if i > 5:
+            break 
+
+    print('mean_corr_score: ', np.mean(corr_score_list))
 
 if __name__ == '__main__':
     main()

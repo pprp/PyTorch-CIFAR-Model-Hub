@@ -1,5 +1,6 @@
-#!/bin/bash
-
+echo on
+E:
+cd E:\GitHub\pytorch-cifar-tricks
 # factor 0
 python tools/train.py --smooth_factor 0 --model lenet --dataset mnist --root ./data --crit lsr
 

@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument('--seed', default=666, type=int, help='seed')
     parser.add_argument('--nw', default=4, type=int, help='use RICAP')
     parser.add_argument('--half',
-                        default=True,
+                        default=False,
                         type=bool,
                         help='use AMP by hand')
 
@@ -139,7 +139,6 @@ def parse_args():
                         default=0.2,
                         type=float,
                         help='smooth factor')
-
 
     args = parser.parse_args()
 

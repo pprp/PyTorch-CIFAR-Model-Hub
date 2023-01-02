@@ -123,10 +123,10 @@ def train_one_epoch(
         else:
             # logging.info("train.py line 134")
             if args.half:
-                input = input.cuda().half()
-            else:
+                input = input.half()
+            if torch.cuda.is_available():
                 input = input.cuda()
-            target = target.cuda()
+                target = target.cuda()
             output = model(input)
             loss = criterion(output, target)
             acc, _ = accuracy(output, target, topk=(1, 5))
@@ -173,10 +173,11 @@ def validate(args, val_loader, model, criterion, epoch, writer):
 
     for i, (input, target) in enumerate(val_loader):
         if args.half:
-            input = input.cuda().half()
-        else:
+            input = input.half()
+
+        if torch.cuda.is_available():
             input = input.cuda()
-        target = target.cuda()
+            target = target.cuda()
 
         output = model(input)
         loss = criterion(output, target)

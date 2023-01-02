@@ -7,22 +7,21 @@ import _init_paths
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-from lib.core.evaluate import accuracy
-
-from lib.core.function import validate
+from torch.utils.data import DataLoader
 from torchvision.datasets import mnist
+from torchvision.transforms import ToTensor
+
+from lib.core.evaluate import accuracy
+from lib.core.function import validate
 from lib.models.build import build_model
 from lib.utils.args import parse_args
 from lib.utils.utils import *  # noqa: F401, F403
-from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
 
 
 def main():
     args = parse_args()
 
     num_gpus = torch.cuda.device_count()
-    
 
     cudnn.benchmark = True
     cudnn.deterministic = True
@@ -52,11 +51,17 @@ def main():
     fh.setFormatter(logging.Formatter(log_format))
     logging.getLogger().addHandler(fh)
 
-    train_dataset = mnist.MNIST(root='./data', train=True, transform=ToTensor(), download=True)
-    test_dataset = mnist.MNIST(root='./data', train=False, transform=ToTensor(), download=True)
+    train_dataset = mnist.MNIST(root='./data',
+                                train=True,
+                                transform=ToTensor(),
+                                download=True)
+    test_dataset = mnist.MNIST(root='./data',
+                               train=False,
+                               transform=ToTensor(),
+                               download=True)
     train_loader = DataLoader(train_dataset, batch_size=5, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=5, shuffle=False)
-    val_loader = test_loader 
+    val_loader = test_loader
 
     print('load data successfully')
 
@@ -88,8 +93,7 @@ def main():
     loss_list = []
     output_list = []
 
-
-    # minimize the loss function to network prediction, 
+    # minimize the loss function to network prediction,
     # instead of the network parameter w.
     for i, (images, labels) in enumerate(train_loader):
         # get the network prediction optimized with loss function L
@@ -105,19 +109,21 @@ def main():
         metric_list.append(accuracy(output, labels))
 
         if i > 5:
-            break 
-    
-    # compute the correlation score 
+            break
+
+    # compute the correlation score
     corr_score_list = []
     for i, (images, labels) in enumerate(train_loader):
         output = model(images)
-        corr_score = accuracy(output_list[i], labels)[0] - accuracy(output, labels)[0]
+        corr_score = accuracy(output_list[i], labels)[0] - accuracy(
+            output, labels)[0]
         corr_score_list.append(corr_score)
 
         if i > 5:
-            break 
+            break
 
     print('mean_corr_score: ', np.mean(corr_score_list))
+
 
 if __name__ == '__main__':
     main()

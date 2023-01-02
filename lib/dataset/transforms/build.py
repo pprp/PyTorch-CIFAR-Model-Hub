@@ -11,10 +11,16 @@ def build_transforms(name='cifar10', type='train', args=None):
     transform_type = None
 
     if type == 'train':
-        base_transform = [
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-        ]
+        if name == 'cifar10' or name == 'cifar100':
+            base_transform = [
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+            ]
+        elif name == 'mnist':
+            base_transform = [
+                transforms.RandomCrop(28, padding=4),
+                transforms.RandomHorizontalFlip(),
+            ]
 
         if args.random_erase:
             mid_transform = [

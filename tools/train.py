@@ -87,7 +87,8 @@ def main():
     # from torchsummary import summary
     # summary(model, input_size=(3, 32, 32), batch_size=-1)
 
-    model = model.cuda()
+    if torch.cuda.is_available():
+        model = model.cuda()
 
     criterion = build_criterion(args).cuda()
     optimizer = build_optimizer(model, args)

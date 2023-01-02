@@ -15,7 +15,7 @@ def str2bool(v):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--model', default='resnet20', help='select model')
+    parser.add_argument('--model', default='lenet', help='select model')
 
     parser.add_argument('--name',
                         default='gpu0',
@@ -41,6 +41,7 @@ def parse_args():
                         type=str2bool,
                         help='train part of cifar10')
     parser.add_argument('--bs', default=128, type=int, help='use RICAP')
+    parser.add_argument('--seed', default=666, type=int, help='seed')
     parser.add_argument('--nw', default=4, type=int, help='use RICAP')
     parser.add_argument('--half',
                         default=True,
@@ -49,7 +50,7 @@ def parse_args():
 
     # CONTROLER
     parser.add_argument('--geno', default='SPP1', help='genotype name')
-    parser.add_argument('--epochs', default=200, type=int)
+    parser.add_argument('--epochs', default=10, type=int)
     parser.add_argument('--lr', '--learning-rate', default=1e-1, type=float)
     parser.add_argument(
         '--optims',

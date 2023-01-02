@@ -40,7 +40,7 @@ def parse_args():
                         default=False,
                         type=str2bool,
                         help='train part of cifar10')
-    parser.add_argument('--bs', default=32, type=int, help='use RICAP')
+    parser.add_argument('--bs', default=4, type=int, help='use RICAP')
     parser.add_argument('--seed', default=666, type=int, help='seed')
     parser.add_argument('--nw', default=4, type=int, help='use RICAP')
     parser.add_argument('--half',

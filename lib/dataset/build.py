@@ -80,7 +80,7 @@ def build_dataset(type='train',
 
 def build_dataloader(name='cifar10', type='train', args=None):
     assert type in ['train', 'val']
-    assert name in ['cifar10', 'cifar100']
+    assert name in ['cifar10', 'cifar100', 'mnist']
     if name == 'cifar10':
         if type == 'train':
             dataloader_type = DataLoader(
@@ -123,6 +123,31 @@ def build_dataloader(name='cifar10', type='train', args=None):
             dataloader_type = DataLoader(
                 build_dataset('val',
                               'cifar100',
+                              args.root,
+                              args=args,
+                              fast=args.fast),
+                batch_size=args.bs,
+                shuffle=False,
+                num_workers=args.nw,
+                pin_memory=True,
+            )
+    elif name == 'mnist':
+        if type == 'train':
+            dataloader_type = DataLoader(
+                build_dataset('train',
+                              'mnist',
+                              args.root,
+                              args=args,
+                              fast=args.fast),
+                batch_size=args.bs,
+                shuffle=True,
+                num_workers=args.nw,
+                pin_memory=True,
+            )
+        elif type == 'val':
+            dataloader_type = DataLoader(
+                build_dataset('val',
+                              'mnist',
                               args.root,
                               args=args,
                               fast=args.fast),

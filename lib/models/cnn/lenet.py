@@ -28,7 +28,7 @@ class LeNet(nn.Module):
         out = F.relu(self.fc1(out))
         out = F.relu(self.fc2(out))
         out = self.classifier(out)
-        # out.register_hook(self.save_gradient)
+        out.register_hook(self.save_gradient)
         return out
 
     def save_gradient(self, grad):

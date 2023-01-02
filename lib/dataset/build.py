@@ -9,7 +9,7 @@ def build_dataset(type='train',
                   root='~/data',
                   args=None,
                   fast=False):
-    assert name in ['cifar10', 'cifar100']
+    assert name in ['cifar10', 'cifar100', 'mnist']
     assert type in ['train', 'val']
 
     dataset_type = None
@@ -44,6 +44,21 @@ def build_dataset(type='train',
                 train=False,
                 download=True,
                 transform=build_transforms('cifar10', 'val', args=args),
+            )
+    elif name == 'mnist':
+        if type == 'train':
+            dataset_type = datasets.MNIST(
+                root=root,
+                train=True,
+                download=True,
+                transform=build_transforms('mnist', 'train', args=args),
+            )
+        elif type == 'val':
+            dataset_type = datasets.MNIST(
+                root=root,
+                train=False,
+                download=True,
+                transform=build_transforms('mnist', 'val', args=args),
             )
     else:
         raise 'Type Error: {} Not Supported'.format(name)

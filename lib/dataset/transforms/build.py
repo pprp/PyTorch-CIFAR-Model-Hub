@@ -7,7 +7,7 @@ from .randomerase import RandomErase
 
 def build_transforms(name='cifar10', type='train', args=None):
     assert type in ['train', 'val']
-    assert name in ['cifar10', 'cifar100']
+    assert name in ['cifar10', 'cifar100', 'mnist']
     transform_type = None
 
     if type == 'train':
@@ -44,6 +44,11 @@ def build_transforms(name='cifar10', type='train', args=None):
                 transforms.Normalize([0.5071, 0.4865, 0.4409],
                                      [0.1942, 0.1918, 0.1958]),
             ]
+        elif name == 'mnist':
+            post_transform = [
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307, ), (0.3081, )),
+            ]
 
         if args.cutout:
             post_transform.append(Cutout(1, 8))
@@ -63,6 +68,11 @@ def build_transforms(name='cifar10', type='train', args=None):
                 transforms.ToTensor(),
                 transforms.Normalize([0.5071, 0.4865, 0.4409],
                                      [0.1942, 0.1918, 0.1958]),
+            ])
+        elif name == 'mnist':
+            transform_type = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307, ), (0.3081, )),
             ])
     else:
         raise 'Type Error in transforms'

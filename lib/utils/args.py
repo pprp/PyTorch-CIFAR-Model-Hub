@@ -31,8 +31,8 @@ def parse_args():
     # DATASET PART
     parser.add_argument(
         '--dataset',
-        default='cifar10',
-        choices=['cifar10', 'cifar100'],
+        default='mnist',
+        choices=['cifar10', 'cifar100', 'mnist'],
         help='dataset name',
     )
     parser.add_argument('--root', default='~/datasets', help='root of dataset')
@@ -40,7 +40,7 @@ def parse_args():
                         default=False,
                         type=str2bool,
                         help='train part of cifar10')
-    parser.add_argument('--bs', default=128, type=int, help='use RICAP')
+    parser.add_argument('--bs', default=32, type=int, help='use RICAP')
     parser.add_argument('--seed', default=666, type=int, help='seed')
     parser.add_argument('--nw', default=4, type=int, help='use RICAP')
     parser.add_argument('--half',
@@ -135,6 +135,11 @@ def parse_args():
                         default=1.0,
                         type=float,
                         help='hyperparameter beta')
+    parser.add_argument('--smooth_factor',
+                        default=0.2,
+                        type=float,
+                        help='smooth factor')
+
 
     args = parser.parse_args()
 

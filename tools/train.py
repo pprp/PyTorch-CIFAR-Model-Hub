@@ -90,7 +90,7 @@ def main():
     if torch.cuda.is_available():
         model = model.cuda()
 
-    criterion = build_criterion(args).cuda()
+    criterion = build_criterion(args) #.cuda()
     optimizer = build_optimizer(model, args)
     scheduler = build_scheduler(args, optimizer)
 
